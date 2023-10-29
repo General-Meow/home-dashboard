@@ -1,6 +1,9 @@
 const path = require('path')
 const express = require("express")
-const weather = require('./weather/WeatherService')
+const dotenv = require('dotenv')
+
+//load env variables
+dotenv.config()
 
 const app = express()
 

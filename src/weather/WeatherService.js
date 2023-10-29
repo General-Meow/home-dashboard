@@ -37,8 +37,6 @@ class WeatherService {
 
     return axios.get(this.todayUrl)
     .then((response) => {
-      console.log(response.data)
-
       const data = response.data;
       const current = data.current;
       const units = data.current_units;
