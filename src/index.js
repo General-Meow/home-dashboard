@@ -41,8 +41,17 @@ app.get('/tube-status', (req, res) => {
   })
 })
 
-app.get('/electric-prices', (req, res) => {
-  octopusService.getAgilePrices()
+app.get('/todays-electric-prices', (req, res) => {
+  octopusService.getTodaysAgilePrices()
+  .then(result => {
+    res.json(result)
+  }).catch((error) => {
+    console.error(error)
+  })
+})
+
+app.get('/tomorrows-electric-prices', (req, res) => {
+  octopusService.getTomorrowsAgilePrices()
   .then(result => {
     res.json(result)
   }).catch((error) => {

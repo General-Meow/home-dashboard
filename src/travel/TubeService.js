@@ -1,12 +1,12 @@
 const NodeCache = require('node-cache')
 const axios = require('axios')
-const {LineStatus, StatusDetail} = require("./LineStatus");
+const {LineStatus, StatusDetail, AllStatus} = require("./LineStatus");
 
 class TubeService {
 
   constructor(nodeCache) {
     this.tubeCache = nodeCache
-    this.tflUrl = 'https://api.tfl.gov.uk/Line/Mode/tube/Status'
+    this.tflUrl = 'https://api.tfl.gov.uk/Line/Mode/tube,dlr,overground/Status'
   }
 
   getTubeLineStatus() {
@@ -24,12 +24,14 @@ class TubeService {
     .then(response => {
 
       const lines = response.data;
-      const result = lines.map(line => {
+      const allStatuses = lines.map(line => {
         const statuses = line.lineStatuses.map(lineStatus => {
           return new StatusDetail(lineStatus.statusSeverityDescription, lineStatus.reason)
         })
-        return new LineStatus(line.id, line.name, statuses, new Date())
+        return new LineStatus(line.id, line.name, statuses)
       })
+
+      const result = new AllStatus(allStatuses, new Date);
 
       this.tubeCache.set('tubeStatus', result)
       return result

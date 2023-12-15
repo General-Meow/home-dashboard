@@ -1,9 +1,8 @@
 class LineStatus {
-  constructor(id, name, statuses, created) {
+  constructor(id, name, statuses) {
     this.id = id
     this.name = name
     this.statuses = statuses
-    this.created = created
   }
 }
 
@@ -13,4 +12,11 @@ class StatusDetail {
     this.description = description
   }
 }
-module.exports = {LineStatus, StatusDetail}
+
+class AllStatus {
+  constructor(lineStatuses, createdDate) {
+    this.lineStatuses = lineStatuses;
+    this.createdDate = createdDate;
+  }
+}
+module.exports = {LineStatus, StatusDetail, AllStatus}

@@ -1,9 +1,10 @@
 class Weather {
-  constructor(day, temperatureNow, description, hourlyWeatherArray) {
-    this.day = day
-    this.temperatureNow = temperatureNow
-    this.description = description
-    this.hourlyWeatherArray = hourlyWeatherArray
+  constructor(day, temperatureNow, description, hourlyWeatherArray, asOfDateTime) {
+    this.day = day;
+    this.temperatureNow = temperatureNow;
+    this.description = description;
+    this.hourlyWeatherArray = hourlyWeatherArray;
+    this.asOfDateTime = asOfDateTime;
   }
 
 }

@@ -1,6 +1,6 @@
 # Home Dashboard
 
-A tiny backend service written in JS and node to provide dashboard info for home
+A tiny backend service written in node to provide dashboard info for the home dashboard fe project
 
 ### Commands
 

@@ -1,6 +1,7 @@
 const path = require('path')
 const express = require("express")
 const dotenv = require('dotenv')
+const cors = require('cors');
 
 //load env variables
 dotenv.config()
@@ -8,6 +9,10 @@ dotenv.config()
 const app = express()
 
 app.use(express.json())
+app.use(cors({
+  origin: ['http://localhost:3001']
+}));
+
 
 //setup the view engine
 app.set('view engine', 'hbs')

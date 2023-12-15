@@ -54,7 +54,7 @@ class WeatherService {
       }
 
       const todaysWeather = new Weather('Today', current.temperature_2m + units.temperature_2m,
-          this.convertWeatherCode(current.weathercode), hourlyWeatherArr);
+          this.convertWeatherCode(current.weathercode), hourlyWeatherArr, new Date());
 
       this.weatherCache.set('todayWeatherCache', todaysWeather)
       return todaysWeather
