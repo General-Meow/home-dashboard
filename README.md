@@ -5,7 +5,7 @@ A tiny backend service written in node to provide dashboard info for the home da
 ### Commands
 
 - docker build -t generalmeow/home-dashboard .
-- docker run -d --name home-dashboard -p 3000:3000 -rm generalmeow/home-dashboard
+- docker run -d --name home-dashboard -p 3000:3000 --rm generalmeow/home-dashboard
 
 ### Dev env
 
