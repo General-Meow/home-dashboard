@@ -18,4 +18,3 @@ You will need to create an `.env` file with the following:
 ```properties
 OCTOPUS_API_KEY="sk_live_xxxxx"
 ```
-
