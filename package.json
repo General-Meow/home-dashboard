@@ -17,5 +17,8 @@
     "hbs": "^4.2.0",
     "node-cache": "^5.1.2",
     "node-cron": "^3.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
