@@ -69,9 +69,3 @@ app.get('/solar-flow', (req, res) => {
         console.error(error)
     });
 })
-
-app.get('/info', (req, res) => {
-    res.json({
-        "octopus_key": process.env.OCTOPUS_API_KEY
-    })
-})
