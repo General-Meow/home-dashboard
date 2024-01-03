@@ -34,13 +34,14 @@ class SolarService {
                 //     Solar_to_Grid: 0,
                 //     Solar_to_House: 0
                 return {
-                    battery_to_grid: inverterFlows1.Battery_to_Grid + inverterFlows2.Battery_to_Grid,
-                    battery_to_house: inverterFlows1.Battery_to_House + inverterFlows2.Battery_to_House,
-                    grid_to_battery: inverterFlows1.Grid_to_Battery + inverterFlows2.Grid_to_Battery,
-                    grid_to_house: inverterFlows1.Grid_to_House + inverterFlows2.Grid_to_House,
-                    solar_to_battery: inverterFlows1.Solar_to_Battery + inverterFlows2.Solar_to_Battery,
-                    solar_to_grid: inverterFlows1.Solar_to_Grid + inverterFlows2.Solar_to_Grid,
-                    solar_to_house: inverterFlows1.Solar_to_House + inverterFlows2.Solar_to_House,
+                    batteryToGrid: inverterFlows1.Battery_to_Grid + inverterFlows2.Battery_to_Grid,
+                    batteryToHouse: inverterFlows1.Battery_to_House + inverterFlows2.Battery_to_House,
+                    gridToBattery: inverterFlows1.Grid_to_Battery + inverterFlows2.Grid_to_Battery,
+                    gridToHouse: inverterFlows1.Grid_to_House + inverterFlows2.Grid_to_House,
+                    solarToBattery: inverterFlows1.Solar_to_Battery + inverterFlows2.Solar_to_Battery,
+                    solarToGrid: inverterFlows1.Solar_to_Grid + inverterFlows2.Solar_to_Grid,
+                    solarToHouse: inverterFlows1.Solar_to_House + inverterFlows2.Solar_to_House,
+                    batteryChargeLevel: 0.0,
                 };
             })
     }

@@ -40,6 +40,7 @@ app.get('/tube-status', (req, res) => {
             res.json(result)
         }).catch((error) => {
         console.error(error)
+        throw error;
     })
 })
 

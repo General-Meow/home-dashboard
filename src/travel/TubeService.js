@@ -38,6 +38,8 @@ class TubeService {
     })
     .catch((error) => {
       console.error(error)
+      return new AllStatus();
+
     })
   }
 
