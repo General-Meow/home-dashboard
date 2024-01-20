@@ -4,11 +4,28 @@ const tubeService = require('./travel/TubeService')
 const octopusService = require('./octopus/OctopusService')
 const solarService = require('./solar/SolarService');
 const {response} = require("express");
+const schedule = require("node-schedule");
 
 const port = process.env.PORT || 3000
 
 app.listen(port, () => {
-    console.log("server is up on port", port)
+    console.log("server is up on port", port);
+
+    octopusService.fillTodaysAgilePricesCache();
+    octopusService.fillTomorrowsAgilePricesCache();
+    tubeService.fillTubeLineStatusCache();
+    weatherService.fillTodaysCache();
+    weatherService.fillForecastCache();
+    solarService.fillCache();
+
+    const scheduleJob = schedule.scheduleJob('* */10 * * * *', function(){
+        octopusService.fillTodaysAgilePricesCache();
+        octopusService.fillTomorrowsAgilePricesCache();
+        tubeService.fillTubeLineStatusCache();
+        weatherService.fillTodaysCache();
+        weatherService.fillForecastCache();
+        solarService.fillCache();
+    });
 })
 
 app.get('', (req, res) => {
@@ -20,7 +37,8 @@ app.get('/todays-weather', (req, res) => {
         .then(result => {
             res.json(result)
         }).catch((error) => {
-        console.error(error)
+        console.error('Error thrown by service', error)
+        res.sendStatus(500)
     })
 })
 
@@ -29,7 +47,8 @@ app.get('/forecast-weather', (req, res) => {
         .then(result => {
             res.json(result)
         }).catch((error) => {
-        console.error(error)
+        console.error('Error thrown by service', error)
+        res.sendStatus(500)
     })
 
 })
@@ -39,8 +58,8 @@ app.get('/tube-status', (req, res) => {
         .then(result => {
             res.json(result)
         }).catch((error) => {
-        console.error(error)
-        throw error;
+        console.error('Error thrown by service', error)
+        res.sendStatus(500)
     })
 })
 
@@ -49,7 +68,8 @@ app.get('/todays-electric-prices', (req, res) => {
         .then(result => {
             res.json(result)
         }).catch((error) => {
-        console.error(error)
+        console.error('Error thrown by service', error)
+        res.sendStatus(500)
     })
 })
 
@@ -58,7 +78,8 @@ app.get('/tomorrows-electric-prices', (req, res) => {
         .then(result => {
             res.json(result)
         }).catch((error) => {
-        console.error(error)
+        console.error('Error thrown by service', error)
+        res.sendStatus(500)
     })
 })
 
@@ -67,6 +88,7 @@ app.get('/solar-flow', (req, res) => {
         .then(result => {
             res.json(result)
         }).catch((error) => {
-        console.error(error)
+        console.error('Error thrown by service', error)
+        res.sendStatus(500)
     });
 })

@@ -13,7 +13,7 @@ class TubeService {
     const lineStatusCache = this.tubeCache.get('lineStatus')
     if (lineStatusCache === undefined) {
       console.log("Cache miss for tube status, getting data....")
-      return this.fillTubeLineStatusCache()
+      return Promise.reject("No tube cache");
     }
     return Promise.resolve(lineStatusCache)
   }
@@ -38,7 +38,7 @@ class TubeService {
     })
     .catch((error) => {
       console.error(error)
-      throw error;
+      return error;
 
     })
   }

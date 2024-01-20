@@ -1,6 +1,7 @@
 const NodeCache = require("node-cache")
 const axios = require("axios")
 const [HalfHourPrice, DayPrices] = require("./HalfHourPrice")
+const schedule = require('node-schedule');
 /**
  * NOTE
  * - all calls need to have basic auth applied with username as sk_live_******
@@ -23,8 +24,8 @@ class OctopusService {
   getTodaysAgilePrices() {
     const prices = this.octopusCache.get('todaysPrices')
     if (prices === undefined) {
-      console.log("Cache miss for electric prices, getting data....")
-      return this.fillTodaysAgilePricesCache()
+      console.log("Cache miss for electric prices, returning nothing")
+      return Promise.reject("No data in cache")
     }
     return Promise.resolve(prices)
   }
@@ -32,8 +33,8 @@ class OctopusService {
   getTomorrowsAgilePrices() {
     const prices = this.octopusCache.get('tomorrowsPrices')
     if (prices === undefined) {
-      console.log("Cache miss for electric prices, getting data....")
-      return this.fillTomorrowsAgilePricesCache()
+      console.log("Cache miss for electric prices, returning nothing")
+      return Promise.reject("No data in cache")
     }
     return Promise.resolve(prices)
   }
@@ -48,7 +49,6 @@ class OctopusService {
 
     const builtPriceUrl = `${this.unitPricesUrl}?period_from=${startOfToday.toISOString()}&period_to=${endOfToday.toISOString()}`;
 
-    console.log('price url', builtPriceUrl)
     return axios.get(builtPriceUrl, {
       auth: {
         username: process.env.OCTOPUS_API_KEY
@@ -88,7 +88,6 @@ class OctopusService {
 
     const builtPriceUrl = `${this.unitPricesUrl}?period_from=${startOfTomorrow.toISOString()}&period_to=${endOfTomorrow.toISOString()}`;
 
-    console.log('price url', builtPriceUrl)
     return axios.get(builtPriceUrl, {
       auth: {
         username: process.env.OCTOPUS_API_KEY
