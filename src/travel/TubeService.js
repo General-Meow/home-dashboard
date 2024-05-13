@@ -6,11 +6,11 @@ class TubeService {
 
   constructor(nodeCache) {
     this.tubeCache = nodeCache
-    this.tflUrl = 'https://api.tfl.gov.uk/Line/Mode/tube,dlr,overground/Status'
+    this.tflUrl = `https://api.tfl.gov.uk/Line/Mode/tube,dlr,overground/Status?app_key=${process.env.TFL_API_KEY}`
   }
 
   getTubeLineStatus() {
-    const lineStatusCache = this.tubeCache.get('lineStatus')
+    const lineStatusCache = this.tubeCache.get('tubeStatus')
     if (lineStatusCache === undefined) {
       console.log("Cache miss for tube status, getting data....")
       return Promise.reject("No tube cache");
@@ -32,7 +32,6 @@ class TubeService {
       })
 
       const result = new AllStatus(allStatuses, new Date);
-
       this.tubeCache.set('tubeStatus', result)
       return result
     })

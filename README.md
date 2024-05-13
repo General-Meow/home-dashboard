@@ -10,11 +10,12 @@ A tiny backend service written in node to provide dashboard info for the home da
 ### Dev env
 
 - Node 21
-- `node install`
-- `node start`
+- `npm install`
+- `npm start`
 
 You will need to create an `.env` file with the following: 
 
 ```properties
 OCTOPUS_API_KEY="sk_live_xxxxx"
+TFL_API_KEY="xxxx"
 ```
