@@ -3,6 +3,7 @@ const weatherService = require('./weather/WeatherService')
 const tubeService = require('./travel/TubeService')
 const octopusService = require('./octopus/OctopusService')
 const solarService = require('./solar/SolarService');
+const dashboardFacade = require('./dashboard/DashboardFacade');
 const {response} = require("express");
 const schedule = require("node-schedule");
 
@@ -85,6 +86,15 @@ app.get('/tomorrows-electric-prices', (req, res) => {
 
 app.get('/solar-flow', (req, res) => {
     solarService.getEnergyFlows()
+        .then(result => {
+            res.json(result)
+        }).catch((error) => {
+        console.error('Error thrown by service', error)
+        res.sendStatus(500)
+    });
+})
+app.get('/dashboard', (req, res) => {
+    dashboardFacade.getDashboardData()
         .then(result => {
             res.json(result)
         }).catch((error) => {
