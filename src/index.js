@@ -6,6 +6,7 @@ const solarService = require('./solar/SolarService');
 const dashboardFacade = require('./dashboard/DashboardFacade');
 const {response} = require("express");
 const schedule = require("node-schedule");
+const busService = require("./travel/BusService");
 
 const port = process.env.PORT || 3000
 
@@ -15,18 +16,21 @@ app.listen(port, () => {
     octopusService.fillTodaysAgilePricesCache();
     octopusService.fillTomorrowsAgilePricesCache();
     tubeService.fillTubeLineStatusCache();
-    weatherService.fillTodaysCache();
-    weatherService.fillForecastCache();
+    // weatherService.fillTodaysCache();
+    // weatherService.fillForecastCache();
     solarService.fillCache();
+    busService.cacheAllBusRoutes();
 
-    const scheduleJob = schedule.scheduleJob('* */10 * * * *', function(){
-        octopusService.fillTodaysAgilePricesCache();
-        octopusService.fillTomorrowsAgilePricesCache();
-        tubeService.fillTubeLineStatusCache();
-        weatherService.fillTodaysCache();
-        weatherService.fillForecastCache();
-        solarService.fillCache();
-    });
+
+    // const scheduleJob = schedule.scheduleJob('* */10 * * * *', function(){
+    //     octopusService.fillTodaysAgilePricesCache();
+    //     octopusService.fillTomorrowsAgilePricesCache();
+    //     tubeService.fillTubeLineStatusCache();
+    //     // weatherService.fillTodaysCache();
+    //     // weatherService.fillForecastCache();
+    //     solarService.fillCache();
+    //     busService.cacheAllBusRoutes();
+    // });
 })
 
 app.get('', (req, res) => {

@@ -15,4 +15,4 @@ class SolarEnergyData {
 
 }
 
-module.exports = [SolarData, SolarEnergyData];
+module.exports = {SolarData, SolarEnergyData};

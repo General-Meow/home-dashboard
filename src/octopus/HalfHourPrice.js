@@ -14,4 +14,4 @@ class HalfHourPrice {
     }
 }
 
-module.exports = [HalfHourPrice, DayPrices]
+module.exports = {HalfHourPrice, DayPrices}

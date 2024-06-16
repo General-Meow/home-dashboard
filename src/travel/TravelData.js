@@ -16,6 +16,13 @@ class BusRoute {
     }
 }
 
+class BusTime {
+    constructor(busAtTime, busAtTimeInMinutes) {
+        this.busAtTime = busAtTime;
+        this.busAtTimeInMinutes = busAtTimeInMinutes;
+    }
+}
+
 class TrainRoute {
     constructor(lineName, statusOk, nextTimesArr, isUnderground) {
         this.lineName = lineName;
@@ -25,4 +32,7 @@ class TrainRoute {
     }
 }
 
-module.exports = [TravelData, BusRoute, TrainRoute];
+
+
+
+module.exports = {TravelData, BusRoute, TrainRoute, BusTime};

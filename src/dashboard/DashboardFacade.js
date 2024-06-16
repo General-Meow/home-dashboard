@@ -1,10 +1,13 @@
 const DashboardData = require('./DashboardData');
 const EnergyData = require('../octopus/EnergyData');
-const [TravelData, BusRoute, TrainRoute] = require('../travel/TravelData');
-const [WeatherData, WeatherDay] = require('../weather/WeatherData');
-const [SolarData, SolarEnergyData] = require('../solar/SolarData');
-const [HalfHourPrice] = require('../octopus/HalfHourPrice');
+const {TravelData, BusRoute, TrainRoute} = require('../travel/TravelData');
+const {WeatherData, WeatherDay} = require('../weather/WeatherData');
+const {SolarData, SolarEnergyData} = require('../solar/SolarData');
+const {HalfHourPrice} = require('../octopus/HalfHourPrice');
 const octopusService = require('../octopus/OctopusService');
+const busService = require('../travel/BusService');
+const tubeService = require('../travel/TubeService');
+const solarService = require('../solar/SolarService');
 
 class DashboardFacade {
 
@@ -15,7 +18,7 @@ class DashboardFacade {
         const solar = this.getSolarData();
 
 
-        const dashboardData = new DashboardData(await energyData, await travel, weather, solar);
+        const dashboardData = new DashboardData(await energyData, await travel, await weather, await solar);
         return dashboardData;
         // return Promise.resolve(dashboardData);
     }
@@ -67,17 +70,10 @@ class DashboardFacade {
         const travelData = new TravelData();
         travelData.timestamp = this.getFormattedTimestamp();
 
-        const busRoutes = [];
-        busRoutes.push(new BusRoute(321, 'Home', 'Riverston', ['09:02', '09:17', '09:22']))
-        busRoutes.push(new BusRoute(321, 'Riverston', 'Home', ['09:02', '09:17', '09:22']))
-        busRoutes.push(new BusRoute(255, 'Home', 'Canada Water', ['09:02', '09:17', '09:22']))
+        const busRoutes = await busService.getAllBusTimes()
         travelData.busRouteArr = busRoutes;
 
-        const trainRoutes = [];
-        trainRoutes.push(new TrainRoute('Northern', false, [], true))
-        trainRoutes.push(new TrainRoute('Victoria', false, [], true))
-        trainRoutes.push(new TrainRoute('Circle', false, [], true))
-        trainRoutes.push(new TrainRoute('Overground', true, ['09:02', '09:17', '09:22'], false))
+        const trainRoutes = await tubeService.getDashboardTubeLineStatus();
         travelData.trainRouteArr = trainRoutes;
         return travelData;
     }
@@ -96,15 +92,11 @@ class DashboardFacade {
         return weatherData;
     }
 
-    getSolarData() {
+    async getSolarData() {
         const solarData = new SolarData();
         solarData.timestamp = this.getFormattedTimestamp();
 
-        const solarEntries = [];
-        solarEntries.push(new SolarEnergyData('Panel', 'Generating From Solar', 3, 'Kwh'));
-        solarEntries.push(new SolarEnergyData('Home', 'House Usage', 200, 'w'));
-        solarEntries.push(new SolarEnergyData('Battery', 'Battery Charge', 100, '%'));
-        solarEntries.push(new SolarEnergyData('Predicted', 'Predicted Generation', 6, 'Kwh'));
+        const solarEntries = await solarService.getEnergyFlows();
 
         solarData.entries = solarEntries;
         return solarData;

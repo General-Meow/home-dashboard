@@ -16,4 +16,4 @@ class WeatherDay {
     }
 }
 
-module.exports = [WeatherData, WeatherDay];
+module.exports = {WeatherData, WeatherDay};

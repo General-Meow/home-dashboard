@@ -1,6 +1,6 @@
 const NodeCache = require("node-cache")
 const axios = require("axios")
-const [HalfHourPrice, DayPrices] = require("./HalfHourPrice")
+const {HalfHourPrice, DayPrices} = require("./HalfHourPrice")
 const schedule = require('node-schedule');
 /**
  * NOTE
