@@ -17,10 +17,32 @@ class DashboardFacade {
         const weather = this.getWeatherData();
         const solar = this.getSolarData();
 
+        const dashboardData = new DashboardData();
 
-        const dashboardData = new DashboardData(await energyData, await travel, await weather, await solar);
+        try {
+            dashboardData.energy = await energyData;
+        } catch (e) {
+            console.error('Error while waiting for energy data', e);
+        }
+
+        try {
+            dashboardData.travel = await travel;
+        } catch (e) {
+            console.error('Error while waiting for travel data', e);
+        }
+
+        try {
+            dashboardData.weather = await weather;
+        } catch (e) {
+            console.error('Error while waiting for weather data', e);
+        }
+
+        try {
+            dashboardData.solar = await solar;
+        } catch (e) {
+            console.error('Error while waiting for solar data', e);
+        }
         return dashboardData;
-        // return Promise.resolve(dashboardData);
     }
 
     async getEnergyData() {

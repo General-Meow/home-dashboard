@@ -30,20 +30,20 @@ class SolarService {
                 const response1 = allPromiseResultsArray[0];
                 const response2 = allPromiseResultsArray[1];
 
-                debug.log('inv12',response2.data);
+                // debug.log('inv12',response2.data);
                 const inverterFlows1 = response1.data.Power.Flows;
                 const inverterPower1 = response1.data.Power.Power;
                 const inverterFlows2 = response2.data.Power.Flows;
                 const inverterPower2 = response2.data.Power.Power;
                 const rawInverter2 = response2.data.raw.invertor;
-                // debug.log('inverter 1', inverterFlows1);
+                debug.log('inverter 2', inverterPower2);
                 // debug.log('inverter 2', inverterFlows2);
 
                 const rows = [];
                 const generatingWatts = inverterPower1.PV_Power + inverterPower2.PV_Power;
                 const pvgenerating = new SolarEnergyData('Panel', 'Generating from solar', generatingWatts, 'w');
 
-                const houseUsageWatts = 0;
+                const houseUsageWatts = inverterPower2.Load_Power;
                 const houseUsage = new SolarEnergyData('Home', 'House Usage', houseUsageWatts, 'w');
 
                 const batteryPercentage = rawInverter2.battery_percent;
