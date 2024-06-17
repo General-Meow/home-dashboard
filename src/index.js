@@ -26,8 +26,8 @@ app.listen(port, () => {
         octopusService.fillTodaysAgilePricesCache();
         octopusService.fillTomorrowsAgilePricesCache();
         tubeService.fillTubeLineStatusCache();
-        // weatherService.fillTodaysCache();
-        // weatherService.fillForecastCache();
+        weatherService.fillTodaysCache();
+        weatherService.fillForecastCache();
         solarService.fillCache();
         busService.cacheAllBusRoutes();
     });
