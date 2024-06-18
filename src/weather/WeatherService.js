@@ -59,6 +59,7 @@ class WeatherService {
             })
             .catch( error => {
                 console.error('todays weather error', error);
+                this.weatherCache.set('todayWeatherCache', {});
             })
     }
 
@@ -99,6 +100,8 @@ class WeatherService {
                 return result;
             }).catch((error) => {
                 console.error('forefcast weather error', error);
+                this.weatherCache.set('forecastWeatherCache', {})
+
             })
 
     }

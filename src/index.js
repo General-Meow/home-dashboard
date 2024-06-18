@@ -21,8 +21,8 @@ app.listen(port, () => {
     solarService.fillCache();
     busService.cacheAllBusRoutes();
 
-
-    const scheduleJob = schedule.scheduleJob('* */10 * * * *', function(){
+    console.log('scheduling job')
+    const scheduleJob = schedule.scheduleJob('*/10 * * * *', function(){
         octopusService.fillTodaysAgilePricesCache();
         octopusService.fillTomorrowsAgilePricesCache();
         tubeService.fillTubeLineStatusCache();
