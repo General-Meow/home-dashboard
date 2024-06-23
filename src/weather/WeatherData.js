@@ -7,9 +7,9 @@ class WeatherData {
 }
 
 class WeatherDay {
-    constructor(dayName, averageTemp, highTemp, lowTemp, weatherIcon) {
+    constructor(dayName, nowTemp, highTemp, lowTemp, weatherIcon) {
         this.dayName = dayName;
-        this.averageTemp = averageTemp;
+        this.nowTemp = nowTemp;
         this.highTemp = highTemp;
         this.lowTemp = lowTemp;
         this.weatherIcon = weatherIcon;

@@ -18,8 +18,11 @@ app.listen(port, () => {
     tubeService.fillTubeLineStatusCache();
     weatherService.fillTodaysCache();
     weatherService.fillForecastCache();
+
+    weatherService.fillDashboardCache();
     solarService.fillCache();
     busService.cacheAllBusRoutes();
+
 
     console.log('scheduling job')
     const scheduleJob = schedule.scheduleJob('*/10 * * * *', function(){
@@ -28,6 +31,7 @@ app.listen(port, () => {
         tubeService.fillTubeLineStatusCache();
         weatherService.fillTodaysCache();
         weatherService.fillForecastCache();
+        weatherService.fillDashboardCache();
         solarService.fillCache();
         busService.cacheAllBusRoutes();
     });

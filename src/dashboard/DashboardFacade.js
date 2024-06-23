@@ -8,6 +8,7 @@ const octopusService = require('../octopus/OctopusService');
 const busService = require('../travel/BusService');
 const tubeService = require('../travel/TubeService');
 const solarService = require('../solar/SolarService');
+const weatherService = require('../weather/WeatherService');
 
 class DashboardFacade {
 
@@ -58,7 +59,7 @@ class DashboardFacade {
 
             // energyData.currentElectricPrice = 11.5;
             energyData.todaysGasPrice = 4.2;
-            energyData.timestamp = this.getFormattedTimestampForDate(prices.asOfDateTime);
+            energyData.timestamp = new Date();
 
             let cheapest = {price: 100};
             let expensive = {price: -100};
@@ -90,7 +91,7 @@ class DashboardFacade {
 
     async getTravelData() {
         const travelData = new TravelData();
-        travelData.timestamp = this.getFormattedTimestamp();
+        travelData.timestamp = new Date();
 
         const busRoutes = await busService.getAllBusTimes()
         travelData.busRouteArr = busRoutes;
@@ -100,9 +101,10 @@ class DashboardFacade {
         return travelData;
     }
 
-    getWeatherData() {
-        const weatherData = new WeatherData();
-        weatherData.timestamp = this.getFormattedTimestamp();
+    async getWeatherData() {
+
+        const weatherData = weatherService.getDashboardWeather();
+        weatherData.timestamp = new Date();
 
         weatherData.todaysWeather = new WeatherDay('Wednesday', 20, 23, 16, 'Sunny');
 
@@ -116,7 +118,7 @@ class DashboardFacade {
 
     async getSolarData() {
         const solarData = new SolarData();
-        solarData.timestamp = this.getFormattedTimestamp();
+        solarData.timestamp = new Date();
 
         const solarEntries = await solarService.getEnergyFlows();
 
@@ -124,19 +126,6 @@ class DashboardFacade {
         return solarData;
     }
 
-    getFormattedTimestamp() {
-        const date = new Date().toLocaleDateString('en-UK', {year: 'numeric', month: '2-digit', day: '2-digit'});
-        const time = new Date().toLocaleTimeString();
-
-        return `${date} ${time}`;
-    }
-
-    getFormattedTimestampForDate(dateToFormat) {
-        const date = dateToFormat.toLocaleDateString('en-UK', {year: 'numeric', month: '2-digit', day: '2-digit'});
-        const time = dateToFormat.toLocaleTimeString();
-
-        return `${date} ${time}`;
-    }
 }
 
 const dashboardFacade = new DashboardFacade();
