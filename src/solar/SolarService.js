@@ -36,7 +36,7 @@ class SolarService {
                 const inverterFlows2 = response2.data.Power.Flows;
                 const inverterPower2 = response2.data.Power.Power;
                 const rawInverter2 = response2.data.raw.invertor;
-                debug.log('inverter 2', inverterPower2);
+                // debug.log('inverter 2', inverterPower2);
                 // debug.log('inverter 2', inverterFlows2);
 
                 const rows = [];

@@ -51,6 +51,7 @@ class WeatherService {
         return axios.get(this.dashboardUrl)
             .then(response => {
                 const responseData = response.data;
+                console.log('chicken', responseData);
 
                 const weatherData = new WeatherData();
                 weatherData.timestamp = new Date();
@@ -164,6 +165,7 @@ class WeatherService {
             case 1:
                 return 'Clear sky'
             case 2:
+                return 'Part Cloudy'
             case 3:
                 return 'Cloudy'
             case 45:
