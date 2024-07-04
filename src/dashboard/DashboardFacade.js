@@ -81,6 +81,12 @@ class DashboardFacade {
             } else if (cheapest.price <= 5) {
                 energyData.alertMessage = 'Cheap Electric today';
             }
+
+            const todaysGasUnitPricePromise = octopusService.getTodaysGasPrice();
+            todaysGasUnitPricePromise.then(price => {
+                energyData.todaysGasPrice = price;
+            })
+
         }).catch(e => {
             console.error('Error while getting data from octopus cache', e);
         })

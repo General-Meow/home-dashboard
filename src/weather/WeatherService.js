@@ -51,7 +51,6 @@ class WeatherService {
         return axios.get(this.dashboardUrl)
             .then(response => {
                 const responseData = response.data;
-                console.log('chicken', responseData);
 
                 const weatherData = new WeatherData();
                 weatherData.timestamp = new Date();

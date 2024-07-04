@@ -13,6 +13,7 @@ const port = process.env.PORT || 3000
 app.listen(port, () => {
     console.log("server is up on port", port);
 
+    octopusService.fillTodaysGasPriceCache();
     octopusService.fillTodaysAgilePricesCache();
     octopusService.fillTomorrowsAgilePricesCache();
     tubeService.fillTubeLineStatusCache();
@@ -25,9 +26,8 @@ app.listen(port, () => {
 
 
     console.log('scheduling job')
+    //run every 10 minutes
     const scheduleJob = schedule.scheduleJob('*/10 * * * *', function(){
-        octopusService.fillTodaysAgilePricesCache();
-        octopusService.fillTomorrowsAgilePricesCache();
         tubeService.fillTubeLineStatusCache();
         weatherService.fillTodaysCache();
         weatherService.fillForecastCache();
@@ -35,6 +35,19 @@ app.listen(port, () => {
         solarService.fillCache();
         busService.cacheAllBusRoutes();
     });
+
+    const every30MinScheduleJob = schedule.scheduleJob('*/30 * * * *', function(){
+        octopusService.fillTodaysAgilePricesCache();
+        octopusService.fillTomorrowsAgilePricesCache();
+    });
+
+    const every6HourScheduleJob = schedule.scheduleJob('0 */6 * * *', function(){
+    });
+
+    const every24HourScheduleJob = schedule.scheduleJob('1 0 * * *', function(){
+        octopusService.fillTodaysGasPriceCache();
+    });
+
 })
 
 app.get('', (req, res) => {
