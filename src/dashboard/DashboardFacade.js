@@ -47,11 +47,10 @@ class DashboardFacade {
     }
 
     async getEnergyData() {
-        let energyData = undefined;
+        const energyData = new EnergyData();
 
         const todaysAgilePrices = octopusService.getTodaysAgilePrices();
         todaysAgilePrices.then(prices => {
-            energyData = new EnergyData();
 
             const now = new Date();
             energyData.currentElectricPrice = prices.halfHourPricesArr
@@ -65,14 +64,16 @@ class DashboardFacade {
             let cheapest = {price: 100};
             let expensive = {price: -100};
 
-            prices.halfHourPricesArr.forEach(entry => {
-                if (entry.price < cheapest.price) {
-                    cheapest = entry;
-                }
-                if (entry.price > expensive.price) {
-                    expensive = entry;
-                }
-            });
+            if(prices.halfHourPricesArr) {
+                prices.halfHourPricesArr.forEach(entry => {
+                    if (entry.price < cheapest.price) {
+                        cheapest = entry;
+                    }
+                    if (entry.price > expensive.price) {
+                        expensive = entry;
+                    }
+                });
+            }
             energyData.cheapestToday = cheapest.price;
             energyData.expensiveToday = expensive.price;
             energyData.next3HoursPriceArr = prices.halfHourPricesArr;
@@ -90,7 +91,6 @@ class DashboardFacade {
 
         }).catch(e => {
             console.error('Error while getting data from octopus cache', e);
-            energyData = undefined;
         })
 
 
