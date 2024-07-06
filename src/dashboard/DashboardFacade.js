@@ -47,10 +47,11 @@ class DashboardFacade {
     }
 
     async getEnergyData() {
-        const energyData = new EnergyData();
+        let energyData = undefined;
 
         const todaysAgilePrices = octopusService.getTodaysAgilePrices();
         todaysAgilePrices.then(prices => {
+            energyData = new EnergyData();
 
             const now = new Date();
             energyData.currentElectricPrice = prices.halfHourPricesArr
@@ -89,6 +90,7 @@ class DashboardFacade {
 
         }).catch(e => {
             console.error('Error while getting data from octopus cache', e);
+            energyData = undefined;
         })
 
 
