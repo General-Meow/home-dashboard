@@ -48,6 +48,7 @@ class DashboardFacade {
 
     async getEnergyData() {
         const energyData = new EnergyData();
+        energyData.timestamp = new Date();
 
         const todaysAgilePrices = octopusService.getTodaysAgilePrices();
         todaysAgilePrices.then(prices => {
@@ -59,7 +60,6 @@ class DashboardFacade {
 
             // energyData.currentElectricPrice = 11.5;
             energyData.todaysGasPrice = 4.2;
-            energyData.timestamp = new Date();
 
             let cheapest = {price: 100};
             let expensive = {price: -100};
