@@ -58,7 +58,6 @@ class DashboardFacade {
                 .find(halfHourPrice => (now >= halfHourPrice.fromDateTime) && (now <= halfHourPrice.toDateTime))
                 .price;
 
-            // energyData.currentElectricPrice = 11.5;
             energyData.todaysGasPrice = 4.2;
 
             let cheapest = {price: 100};

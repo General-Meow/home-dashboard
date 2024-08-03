@@ -101,21 +101,29 @@ class OctopusService {
     }
 
     fillTodaysAgilePricesCache() {
+        var now = new Date();
+        var currentCachedTodaysPrice = this.octopusCache.get('todaysPrices');
+
+        if(currentCachedTodaysPrice !== undefined) {
+            //exit early if the currently stored price is the same as today
+            var asOfDateTime = currentCachedTodaysPrice.asOfDateTime;
+            if(now.getDay() === asOfDateTime.getDay() && now.getMonth() === asOfDateTime.getMonth()) {
+                return;
+            }
+        }
+
         const startOfToday = new Date();
         startOfToday.setUTCHours(0, 0, 0, 0)
-
         const endOfToday = new Date();
         endOfToday.setUTCHours(23, 59, 0, 0)
 
-        const builtPriceUrl = `${this.unitPricesUrl}?period_from=${startOfToday.toISOString()}&period_to=${endOfToday.toISOString()}`;
+        const todaysPriceUrl = `${this.unitPricesUrl}?period_from=${startOfToday.toISOString()}&period_to=${endOfToday.toISOString()}`;
 
-        return axios.get(builtPriceUrl, {
-            auth: {
-                username: process.env.OCTOPUS_API_KEY
-            }
-        })
-            .then(response => {
-
+        return axios.get(todaysPriceUrl, {
+                auth: {
+                    username: process.env.OCTOPUS_API_KEY
+                }
+            }).then(response => {
                 const unitPrices = response.data.results;
                 const prices = unitPrices
                     .sort((a, b) => {
