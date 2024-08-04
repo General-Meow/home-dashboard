@@ -4,7 +4,8 @@
   "description": "home dashboard to show on the rpi",
   "main": "app.js",
   "scripts": {
-    "start": "node --watch src/index.js",
+    "build": "tsc",
+    "start": "node --watch dist/index",
     "test": "jest"
   },
   "author": "Paul",
@@ -24,10 +25,13 @@
     "@types/axios": "^0.14.0",
     "@types/express": "^4.17.21",
     "@types/hbs": "^4.0.4",
+    "@types/jest": "^29.5.12",
     "@types/node-cache": "^4.2.5",
     "@types/node-cron": "^3.0.11",
     "@types/node-schedule": "^2.1.7",
     "jest": "^29.7.0",
+    "ts-jest": "^29.2.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }
 }
