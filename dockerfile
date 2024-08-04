@@ -10,7 +10,6 @@ WORKDIR /app
 
 COPY package.json /app
 COPY . /app
-RUN npm install && npm cache clean --force
-RUN ./node_modules/typescript/bin/tsc
+RUN npm install && npm run build && npm cache clean --force
 EXPOSE 3000
-ENTRYPOINT ["node", "dist/index"]
+ENTRYPOINT ["node", "/app/dist/index.js"]
