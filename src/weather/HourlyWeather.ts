@@ -1,4 +1,10 @@
-class HourlyWeather{
+export default class HourlyWeather{
+
+  hour: Number;
+  tempurature: Number;
+  chanceOfRain: String;
+  description: String;
+
   constructor(hour, temperature, chanceOfRain, description) {
     this.hour = hour
     this.tempurature = temperature
@@ -6,5 +12,3 @@ class HourlyWeather{
     this.description = description
   }
 }
-
-module.exports = HourlyWeather

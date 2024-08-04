@@ -1,13 +1,17 @@
-const Weather = require('./Weather')
-const HourlyWeather = require('./HourlyWeather')
-const axios = require('axios')
-const NodeCache = require("node-cache");
-const {WeatherData, WeatherDay} = require('./WeatherData')
-const utils = require('../common/Utils')
+import Weather, {Forecast} from "./Weather";
+import HourlyWeather from "./HourlyWeather";
+import axios from "axios";
+import NodeCache from "node-cache";
+import {WeatherData, WeatherDay} from "./WeatherData";
+import utils from "../common/Utils";
 
 class WeatherService {
 
-    constructor(weatherCacheParam) {
+    weatherCache: NodeCache;
+    todayUrl: string;
+    tenDayForecastUrl: string;
+    dashboardUrl: string;
+    constructor(weatherCacheParam: NodeCache) {
         const lat = 51.507351
         const lon = -0.127758
 
@@ -17,8 +21,8 @@ class WeatherService {
         this.dashboardUrl = 'https://api.open-meteo.com/v1/forecast?latitude=51.5085&longitude=-0.1257&current=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FLondon';
     }
 
-    getTodayWeather() {
-        const todayCache = this.weatherCache.get('todayWeatherCache')
+    async getTodayWeather(): Promise<Weather> {
+        const todayCache: Weather = this.weatherCache.get('todayWeatherCache')
         if (todayCache === undefined) {
             console.log("cache miss for today's weather, getting data....")
             return Promise.reject("No weather data");
@@ -26,8 +30,8 @@ class WeatherService {
         return Promise.resolve(todayCache)
     }
 
-    getForecastWeather() {
-        const forecastWeatherCache = this.weatherCache.get('forecastWeatherCache');
+    async getForecastWeather(): Promise<Forecast> {
+        const forecastWeatherCache: Forecast = this.weatherCache.get('forecastWeatherCache');
         if (forecastWeatherCache === undefined) {
             console.log("cache miss for forecast getting data....")
             return Promise.reject("No weather data");
@@ -36,8 +40,8 @@ class WeatherService {
     }
 
 
-    async getDashboardWeather() {
-        const dashboardWeatherCache = this.weatherCache.get('dashboardWeatherCache');
+    async getDashboardWeather():Promise<WeatherData> {
+        const dashboardWeatherCache: WeatherData = this.weatherCache.get('dashboardWeatherCache');
         if (dashboardWeatherCache === undefined) {
             console.log("cache miss for dashboard weather getting data....")
             return Promise.reject("No weather data");
@@ -47,7 +51,7 @@ class WeatherService {
 
 
 
-    fillDashboardCache() {
+    async fillDashboardCache(): Promise<void | WeatherData> {
         return axios.get(this.dashboardUrl)
             .then(response => {
                 const responseData = response.data;
@@ -76,11 +80,10 @@ class WeatherService {
             }).catch(error => {
                 console.error('dashboard weather error', error);
                 this.weatherCache.del('dashboardWeatherCache');
-
             })
     }
 
-    fillTodaysCache() {
+    async fillTodaysCache(): Promise<void | Weather> {
         return axios.get(this.todayUrl)
             .then((response) => {
 
@@ -92,7 +95,7 @@ class WeatherService {
                 const units = data.current_units;
                 const hourly = data.hourly;
 
-                const hourlyWeatherArr = [];
+                const hourlyWeatherArr = new Array<HourlyWeather>();
                 for (let i = 0; i < hourly.time.length; i++) {
                     const hour = hourly.time[i]
                     const temp = hourly.temperature_2m[i]
@@ -103,7 +106,7 @@ class WeatherService {
                     hourlyWeatherArr.push(hourlyWeather)
                 }
 
-                const todaysWeather = new Weather('Today', current.temperature_2m + units.temperature_2m,
+                const todaysWeather: Weather = new Weather('Today', current.temperature_2m + units.temperature_2m,
                     this.convertWeatherCode(current.weathercode), hourlyWeatherArr, new Date());
 
                 this.weatherCache.set('todayWeatherCache', todaysWeather);
@@ -115,50 +118,50 @@ class WeatherService {
             })
     }
 
-    fillForecastCache() {
-        return axios.get(this.tenDayForecastUrl)
-            .then((response) => {
-                var data = response.data;
+    async fillForecastCache(): Promise<void | Forecast> {
+        try {
+            const response = await axios.get(this.tenDayForecastUrl);
+            const data = response.data;
 
-                var week = []
-                var hourly = data.hourly;
-                var day = '';
-                var hourlyWeather = new Array();
-                for (let i = 0; i < hourly.time.length; i++) {
-                    var time = hourly.time[i];
-                    var temp = hourly.temperature_2m[i];
-                    var rainProbability = hourly.precipitation_probability[i];
-                    var weatherCode = hourly.weathercode[i];
-                    var splitTime = time.split('T');
+            const week = new Array<Weather>();
 
-                    if (day === '') {
-                        day = splitTime[0]
-                    }
 
-                    if (day != splitTime[0]) {
-                        //new day create the weather with all the current hours
-                        week.push(new Weather(day, null, null, hourlyWeather));
-                        day = splitTime[0]
-                        hourlyWeather = new Array()
-                    }
+            const hourly = data.hourly;
+            let day = '';
+            const hourlyWeather = new Array<HourlyWeather>();
+            for (let i = 0; i < hourly.time.length; i++) {
+                var time = hourly.time[i];
+                var temp = hourly.temperature_2m[i];
+                var rainProbability = hourly.precipitation_probability[i];
+                var weatherCode = hourly.weathercode[i];
+                var splitTime = time.split('T');
 
-                    hourlyWeather.push(new HourlyWeather(time, temp,
-                        `${rainProbability}${data.hourly_units.precipitation_probability}`,
-                        this.convertWeatherCode(weatherCode)))
+                if (day === '') {
+                    day = splitTime[0];
                 }
 
-                const result = {week: week};
-                this.weatherCache.set('forecastWeatherCache', result)
-                return result;
-            }).catch((error) => {
-                console.error('forefcast weather error', error);
-                this.weatherCache.set('forecastWeatherCache', {})
+                if (day != splitTime[0]) {
+                    //new day create the weather with all the current hours
+                    week.push(new Weather(day, null, null, hourlyWeather, new Date()));
+                    day = splitTime[0];
+                }
 
-            })
+                hourlyWeather.push(new HourlyWeather(time, temp,
+                    `${rainProbability}${data.hourly_units.precipitation_probability}`,
+                    this.convertWeatherCode(weatherCode)));
+            }
+
+            const result_1 = new Forecast(week);
+            this.weatherCache.set('forecastWeatherCache', result_1);
+            return result_1;
+        } catch (error) {
+            console.error('forefcast weather error', error);
+            this.weatherCache.set('forecastWeatherCache', {});
+        }
 
     }
 
-    convertWeatherCode(weatherCode) {
+    convertWeatherCode(weatherCode: number) {
         switch (weatherCode) {
             case 0:
             case 1:
@@ -206,7 +209,4 @@ class WeatherService {
 const ttl15Mins = 900
 const checkEvery2Mins = 120
 
-const weatherService = new WeatherService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}))
-
-module
-    .exports = weatherService
+export const weatherService = new WeatherService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}))

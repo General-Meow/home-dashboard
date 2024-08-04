@@ -1,8 +1,12 @@
-const axios = require ("axios");
-const NodeCache = require("node-cache");
-const {BusTime, BusRoute} = require("./TravelData");
+import axios from "axios";
+import NodeCache from "node-cache";
+import {BusTime} from "./TravelData";
+import {BusRoute} from "./TravelData";
 
 class BusService {
+
+    busCache: NodeCache;
+    busUrlTemplate: string;
 
     busCacheKeys = [
         '321ToRiverston',
@@ -15,19 +19,19 @@ class BusService {
         this.busUrlTemplate = `https://api.tfl.gov.uk/Line/BUS_NUMBER/Arrivals/STOP_ID?app_key=${process.env.TFL_API_KEY}`;
     }
 
-    mapToBusTime = (bus) => {
+    mapToBusTime = (bus) : BusTime => {
         const busAtTime = new Date(bus.expectedArrival);
         const now = new Date();
-        const diff = Math.abs(busAtTime - now);
+        const diff = Math.abs(busAtTime.getTime() - now.getTime());
         const minutes = Math.floor((diff/1000)/60);
         return new BusTime(busAtTime, minutes);
     }
 
     cacheAllBusRoutes = () => {
-        const route321ToRiverston = this.createBusRouteUrl(321, '490009689T');
-        const route321ToNewCross = this.createBusRouteUrl(321, '490014334W');
-        const route225ToLewisham = this.createBusRouteUrl(225, '490006451E');
-        const route225ToCanadaWater = this.createBusRouteUrl(225, '490009446W');
+        const route321ToRiverston = this.createBusRouteUrl("321", '490009689T');
+        const route321ToNewCross = this.createBusRouteUrl("321", '490014334W');
+        const route225ToLewisham = this.createBusRouteUrl("225", '490006451E');
+        const route225ToCanadaWater = this.createBusRouteUrl("225", '490009446W');
 
         const route321ToRiverstonPromise = axios.get(route321ToRiverston)
             .then(response => {
@@ -88,20 +92,18 @@ class BusService {
         })
     }
 
-    getAllBusTimes = async () => {
-        const allBusTimes = this.busCacheKeys.map(cacheKey => {
+    getAllBusTimes = async (): Promise<BusRoute[]> => {
+        const allBusTimes: BusRoute[] = this.busCacheKeys.map(cacheKey => {
             return this.busCache.get(cacheKey);
         });
         return allBusTimes;
     }
 
-    createBusRouteUrl = (busNumber, stopId) => {
+    createBusRouteUrl = (busNumber: string, stopId: string): string => {
         return this.busUrlTemplate.replace('BUS_NUMBER', busNumber).replace('STOP_ID', stopId);
     }
 }
 const ttl15Mins = 900
 const checkEvery2Mins = 120
 
-const busService = new BusService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}));
-
-module.exports = busService;
+export const busService = new BusService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}));

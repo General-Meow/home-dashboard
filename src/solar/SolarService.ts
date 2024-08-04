@@ -1,18 +1,22 @@
-const NodeCache = require("node-cache");
-const axios = require("axios");
-const debug = require("debug");
-const {SolarData, SolarEnergyData} = require("../solar/SolarData");
+import NodeCache from "node-cache";
+import axios from "axios";
+import debug from "debug";
+import {SolarData, SolarEnergyData} from "../solar/SolarData";
 
 // for more information, see https://github.com/neilmunday/giv_tcp
-class SolarService {
+export class SolarService {
+    nodeCache: NodeCache;
+    inverterAddress1: string;
+    inverterAddress2: string;
+
     constructor(nodeCache) {
         this.nodeCache = nodeCache
         this.inverterAddress1 = 'http://192.168.68.50:6345/readData';
         this.inverterAddress2 = 'http://192.168.68.50:6346/readData';
     }
 
-    getEnergyFlows = () => {
-        const solarCache = this.nodeCache.get('solarCache')
+    getEnergyFlows = async (): Promise<SolarData> => {
+        const solarCache: SolarData = this.nodeCache.get('solarCache')
         if (solarCache === undefined) {
             console.log("Cache miss for solar values, returning nothing")
             return Promise.reject("No data in cache")
@@ -52,7 +56,7 @@ class SolarService {
                 const predicted = 0;
                 const predictionCharge = new SolarEnergyData('Predicted', 'Predicted Generation', predicted, 'w');
 
-                const data = new SolarData(new Date(), [pvgenerating, houseUsage, battery, predictionCharge]);
+                const data: SolarData = new SolarData(new Date(), [pvgenerating, houseUsage, battery, predictionCharge]);
 
                 //     = {
                 //     asOf: new Date(),
@@ -72,10 +76,9 @@ class SolarService {
                 console.error('solar error', error);
             });
     }
-};
+}
 
 const ttl15Mins = 900
 const checkEvery2Mins = 120
 
-const solarService = new SolarService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}));
-module.exports = solarService
+export const solarService = new SolarService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}));

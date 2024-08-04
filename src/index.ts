@@ -1,12 +1,11 @@
-const app = require('./app')
-const weatherService = require('./weather/WeatherService')
-const tubeService = require('./travel/TubeService')
-const octopusService = require('./octopus/OctopusService')
-const solarService = require('./solar/SolarService');
-const dashboardFacade = require('./dashboard/DashboardFacade');
-const {response} = require("express");
-const schedule = require("node-schedule");
-const busService = require("./travel/BusService");
+import app from "./app";
+import {weatherService} from "./weather/WeatherService";
+import {tubeService} from "./travel/TubeService";
+import {octopusService} from "./octopus/OctopusService";
+import {solarService} from "./solar/SolarService";;
+import {dashboardFacade} from "./dashboard/DashboardFacade";
+import schedule from "node-schedule";
+import {busService} from "./travel/BusService";
 
 const port = process.env.PORT || 3000
 

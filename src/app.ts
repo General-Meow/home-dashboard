@@ -1,7 +1,7 @@
-const path = require('path')
-const express = require("express")
-const dotenv = require('dotenv')
-const cors = require('cors');
+import path from 'path';
+import express  from "express";
+import dotenv from 'dotenv';
+import cors from 'cors';
 
 //load env variables
 dotenv.config()
@@ -25,4 +25,5 @@ const partialsDir = path.join(__dirname, '../templates/partials')
 const viewsDir = path.join(__dirname, '../templates/views')
 app.set('views', viewsDir)
 
-module.exports = app
+export default app;
+// module.exports = app

@@ -1,8 +1,7 @@
-const NodeCache = require("node-cache")
-const axios = require("axios")
-const {HalfHourPrice, DayPrices} = require("./HalfHourPrice")
-const schedule = require('node-schedule');
-const {response} = require("express");
+import NodeCache from "node-cache";
+import axios from "axios";
+import {DayPrices, HalfHourPrice} from "./HalfHourPrice";
+import {OctopusPrice} from "./Octopus";
 
 /**
  * NOTE
@@ -12,7 +11,7 @@ const {response} = require("express");
  * Get all products: https://api.octopus.energy/v1/products/
  * Get info on your account https://api.octopus.energy/v1/accounts/<ACCOUNT-NUMBER>
  *
- * Under gass->agreements find the valid gas tariff code within the date. G-1R-SILVER-23-12-06-C
+ * Under gas->agreements find the valid gas tariff code within the date. G-1R-SILVER-23-12-06-C
  * The tariff code is made up of the product code usually the word after the 5 char then the date. eg. SILVER-23-12-06
  *
  * Get the daily price of the tracker gas product: https://api.octopus.energy/v1/products/<PRODUCT>/gas-tariffs/<TARIFF>/standard-unit-rates/
@@ -25,6 +24,10 @@ const {response} = require("express");
  * Get standing charge: https://api.octopus.energy/v1/products/AGILE-FLEX-BB-23-02-08/electricity-tariffs/E-1R-AGILE-FLEX-BB-23-02-08-C/standing-charges/
  */
 class OctopusService {
+    octopusCache: NodeCache;
+    accountUrl: string;
+    unitPricesUrl: string;
+    standingChargePriceUrl: string;
 
     constructor(cache) {
         const accountNumber = process.env.OCTOPUS_ACCOUNT_NUMBER
@@ -35,8 +38,8 @@ class OctopusService {
         this.standingChargePriceUrl = 'https://api.octopus.energy/v1/products/AGILE-FLEX-BB-23-02-08/electricity-tariffs/E-1R-AGILE-FLEX-BB-23-02-08-C/standing-charges/'
     }
 
-    getTodaysAgilePrices() {
-        const prices = this.octopusCache.get('todaysPrices')
+    getTodaysAgilePrices(): Promise<DayPrices> {
+        const prices = this.octopusCache.get('todaysPrices') as DayPrices
         if (prices === undefined) {
             console.log("Cache miss for electric prices, returning nothing")
             return Promise.reject("No data in cache")
@@ -53,8 +56,8 @@ class OctopusService {
         return Promise.resolve(prices)
     }
 
-    getTodaysGasPrice() {
-        const prices = this.octopusCache.get('todaysGasPrice')
+    getTodaysGasPrice(): Promise<void | number> {
+        const prices = this.octopusCache.get('todaysGasPrice') as number
         if (prices === undefined) {
             console.log("Cache miss for gas prices, returning nothing")
             return Promise.reject("No data in cache")
@@ -71,11 +74,12 @@ class OctopusService {
         return Promise.resolve(prices)
     }
 
-    fillGasTariffCache() {
+    fillGasTariffCache(): Promise<string> {
 
         return axios.get(this.accountUrl, {
             auth: {
-                username: process.env.OCTOPUS_API_KEY
+                username: process.env.OCTOPUS_API_KEY,
+                password: undefined
             }
         }).then(response => {
 
@@ -91,23 +95,23 @@ class OctopusService {
                     break;
                 }
             }
+            console.log(`setting gas tariff ${currentGasTariff.tariff_code} into cache`)
             this.octopusCache.set('gasTariff', currentGasTariff.tariff_code);
 
             return currentGasTariff.tariff_code;
+        }).catch(error => {
+            console.error(error)
         })
-            .catch(error => {
-                console.error(error)
-            })
     }
 
-    fillTodaysAgilePricesCache() {
+    async fillTodaysAgilePricesCache(): Promise<void | DayPrices> {
         var now = new Date();
-        var currentCachedTodaysPrice = this.octopusCache.get('todaysPrices');
+        var currentCachedTodaysPrice: DayPrices = this.octopusCache.get('todaysPrices');
 
-        if(currentCachedTodaysPrice !== undefined) {
+        if (currentCachedTodaysPrice !== undefined) {
             //exit early if the currently stored price is the same as today
             var asOfDateTime = currentCachedTodaysPrice.asOfDateTime;
-            if(now.getDay() === asOfDateTime.getDay() && now.getMonth() === asOfDateTime.getMonth()) {
+            if (now.getDay() === asOfDateTime.getDay() && now.getMonth() === asOfDateTime.getMonth()) {
                 return;
             }
         }
@@ -120,25 +124,26 @@ class OctopusService {
         const todaysPriceUrl = `${this.unitPricesUrl}?period_from=${startOfToday.toISOString()}&period_to=${endOfToday.toISOString()}`;
 
         return axios.get(todaysPriceUrl, {
-                auth: {
-                    username: process.env.OCTOPUS_API_KEY
-                }
-            }).then(response => {
-                const unitPrices = response.data.results;
-                const prices = unitPrices
-                    .sort((a, b) => {
-                        return new Date(a.valid_from) - new Date(b.valid_from)
-                    })
-                    .map(unitPrice => {
-                        return new HalfHourPrice(unitPrice.value_inc_vat,
-                            new Date(unitPrice.valid_from), new Date(unitPrice.valid_to))
-                    })
+            auth: {
+                username: process.env.OCTOPUS_API_KEY,
+                password: undefined
+            }
+        }).then(response => {
+            const unitPrices: OctopusPrice[] = response.data.results as OctopusPrice[];
+            const prices = unitPrices
+                .sort((a, b) => {
+                    return new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime()
+                })
+                .map(unitPrice => {
+                    return new HalfHourPrice(unitPrice.value_inc_vat,
+                        new Date(unitPrice.valid_from), new Date(unitPrice.valid_to))
+                })
 
-                const dayPrices = new DayPrices(startOfToday, prices, new Date());
+            const dayPrices: DayPrices = new DayPrices(startOfToday, prices, new Date());
 
-                this.octopusCache.set('todaysPrices', dayPrices);
-                return dayPrices;
-            })
+            this.octopusCache.set('todaysPrices', dayPrices);
+            return dayPrices;
+        })
             .catch(error => {
                 console.error(error)
             })
@@ -159,15 +164,16 @@ class OctopusService {
 
         return axios.get(builtPriceUrl, {
             auth: {
-                username: process.env.OCTOPUS_API_KEY
+                username: process.env.OCTOPUS_API_KEY,
+                password: undefined
             }
         })
             .then(response => {
 
-                const unitPrices = response.data.results;
+                const unitPrices = response.data.results as OctopusPrice[];
                 const prices = unitPrices
                     .sort((a, b) => {
-                        return new Date(a.valid_from) - new Date(b.valid_from)
+                        return new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime();
                     })
                     .map(unitPrice => {
                         return new HalfHourPrice(unitPrice.value_inc_vat,
@@ -188,15 +194,15 @@ class OctopusService {
 
         this.getGasTariff()
             .then(gasTariff => {
-                    this.getGasPrice(tariffCode).then(gasPrice => {
+                    this.getGasPrice(gasTariff).then(gasPrice => {
                             this.octopusCache.set('todaysGasPrice', gasPrice);
                         }
                     ).catch(error => console.error);
                 }
             ).catch(error => {
-                console.error('getting gasTariff error', error);
-                return this.fillGasTariffCache();
-            }).then(gasTariff => {
+            console.error('getting gasTariff error, now calling fillGasTariffCache()', error);
+            return this.fillGasTariffCache();
+        }).then(gasTariff => {
             this.getGasPrice(gasTariff)
                 .then(gasPrice => {
                     this.octopusCache.set('todaysGasPrice', gasPrice);
@@ -204,7 +210,7 @@ class OctopusService {
         });
     }
 
-    getGasPrice(gasTariff) {
+    getGasPrice(gasTariff): Promise<number> {
         const productCode = gasTariff.slice(5, gasTariff.length - 2);
         var today = new Date();
         const dateTimeFormatter = new Intl.DateTimeFormat("en-GB", {
@@ -218,7 +224,8 @@ class OctopusService {
         const url = `https://api.octopus.energy/v1/products/${productCode}/gas-tariffs/${gasTariff}/standard-unit-rates/?period_from=${todayStr}&period_to=${tomorrowStr}`;
         return axios.get(url, {
             auth: {
-                username: process.env.OCTOPUS_API_KEY
+                username: process.env.OCTOPUS_API_KEY,
+                password: undefined
             }
         }).then(response => {
             return response.data.results[0].value_inc_vat;
@@ -231,5 +238,4 @@ class OctopusService {
 const ttl15Mins = 900
 const checkEvery2Mins = 120
 
-const octopusService = new OctopusService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}));
-module.exports = octopusService
+export const octopusService = new OctopusService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}));

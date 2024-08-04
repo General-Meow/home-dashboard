@@ -1,14 +1,13 @@
-const DashboardData = require('./DashboardData');
-const EnergyData = require('../octopus/EnergyData');
-const {TravelData, BusRoute, TrainRoute} = require('../travel/TravelData');
-const {WeatherData, WeatherDay} = require('../weather/WeatherData');
-const {SolarData, SolarEnergyData} = require('../solar/SolarData');
-const {HalfHourPrice} = require('../octopus/HalfHourPrice');
-const octopusService = require('../octopus/OctopusService');
-const busService = require('../travel/BusService');
-const tubeService = require('../travel/TubeService');
-const solarService = require('../solar/SolarService');
-const weatherService = require('../weather/WeatherService');
+import {DashboardData} from "./DashboardData";
+import EnergyData from "../octopus/EnergyData";
+import {TravelData, BusRoute, TrainRoute} from "../travel/TravelData";
+import {WeatherDay} from "../weather/WeatherData";
+import {SolarData, SolarEnergyData} from "../solar/SolarData";
+import {octopusService} from "../octopus/OctopusService";
+import {busService} from "../travel/BusService";
+import {tubeService} from "../travel/TubeService";
+import {solarService} from "../solar/SolarService";
+import {weatherService} from "../weather/WeatherService";
 
 class DashboardFacade {
 
@@ -85,7 +84,9 @@ class DashboardFacade {
 
             const todaysGasUnitPricePromise = octopusService.getTodaysGasPrice();
             todaysGasUnitPricePromise.then(price => {
-                energyData.todaysGasPrice = price;
+                if (price) {
+                    energyData.todaysGasPrice = price;
+                }
             })
 
         }).catch(e => {
@@ -103,14 +104,14 @@ class DashboardFacade {
         const busRoutes = await busService.getAllBusTimes()
         travelData.busRouteArr = busRoutes;
 
-        const trainRoutes = await tubeService.getDashboardTubeLineStatus();
+        const trainRoutes = await tubeService.getDashboardTubeLineStatus() as TrainRoute[];
         travelData.trainRouteArr = trainRoutes;
         return travelData;
     }
 
     async getWeatherData() {
 
-        const weatherData = weatherService.getDashboardWeather();
+        const weatherData = await weatherService.getDashboardWeather();
         weatherData.timestamp = new Date();
 
         weatherData.todaysWeather = new WeatherDay('Wednesday', 20, 23, 16, 'Sunny');
@@ -124,17 +125,11 @@ class DashboardFacade {
     }
 
     async getSolarData() {
-        const solarData = new SolarData();
+        const solarData = await solarService.getEnergyFlows();
         solarData.timestamp = new Date();
-
-        const solarEntries = await solarService.getEnergyFlows();
-
-        solarData.entries = solarEntries;
         return solarData;
     }
 
 }
 
-const dashboardFacade = new DashboardFacade();
-
-module.exports = dashboardFacade;
+export const dashboardFacade = new DashboardFacade();
