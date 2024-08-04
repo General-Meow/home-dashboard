@@ -41,8 +41,10 @@ class OctopusService {
     getTodaysAgilePrices(): Promise<DayPrices> {
         const prices = this.octopusCache.get('todaysPrices') as DayPrices
         if (prices === undefined) {
-            console.log("Cache miss for electric prices, returning nothing")
-            return Promise.reject("No data in cache")
+            console.log("Cache miss for electric prices, trying to fill the cache");
+            this.fillTodaysAgilePricesCache().then(result => {
+                return result;
+            }).catch(error => Promise.reject("No data in cache"));
         }
         return Promise.resolve(prices)
     }
@@ -104,15 +106,17 @@ class OctopusService {
         })
     }
 
-    async fillTodaysAgilePricesCache(): Promise<void | DayPrices> {
+    async fillTodaysAgilePricesCache(): Promise<DayPrices> {
         var now = new Date();
         var currentCachedTodaysPrice: DayPrices = this.octopusCache.get('todaysPrices');
 
         if (currentCachedTodaysPrice !== undefined) {
             //exit early if the currently stored price is the same as today
             var asOfDateTime = currentCachedTodaysPrice.asOfDateTime;
-            if (now.getDay() === asOfDateTime.getDay() && now.getMonth() === asOfDateTime.getMonth()) {
-                return;
+            if (asOfDateTime !== undefined &&
+                now.getDay() === asOfDateTime.getDay() &&
+                now.getMonth() === asOfDateTime.getMonth()) {
+                return currentCachedTodaysPrice;
             }
         }
 
@@ -143,10 +147,10 @@ class OctopusService {
 
             this.octopusCache.set('todaysPrices', dayPrices);
             return dayPrices;
+        }).catch(error => {
+            console.error(error);
+            throw error;
         })
-            .catch(error => {
-                console.error(error)
-            })
     }
 
     fillTomorrowsAgilePricesCache() {
