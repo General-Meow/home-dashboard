@@ -23,6 +23,7 @@ class DashboardFacade {
             dashboardData.energy = await energyData;
         } catch (e) {
             console.error('Error while waiting for energy data', e);
+            dashboardData.energy = undefined;
         }
 
         try {
@@ -91,8 +92,8 @@ class DashboardFacade {
 
         }).catch(e => {
             console.error('Error while getting data from octopus cache', e);
+            return Promise.reject("Error while getting data from octopus cache")
         })
-
 
         return Promise.resolve(energyData);
     }
