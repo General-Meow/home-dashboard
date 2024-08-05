@@ -1,5 +1,4 @@
-ARG arch
-FROM --platform=linux/${arch} node:slim
+FROM node:slim
 MAINTAINER "Paul Hoang 2024"
 #set NODE_ENV to production using -e flag in production to decrease the logging
 ENV NODE_ENV="development"
