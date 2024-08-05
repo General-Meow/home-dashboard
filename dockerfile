@@ -1,4 +1,5 @@
-FROM node:slim
+ARG arch
+FROM --platform=linux/${arch} node:slim
 MAINTAINER "Paul Hoang 2024"
 #set NODE_ENV to production using -e flag in production to decrease the logging
 ENV NODE_ENV="development"
@@ -12,4 +13,4 @@ COPY package.json /app
 COPY . /app
 RUN npm install && npm run build && npm cache clean --force
 EXPOSE 3000
-ENTRYPOINT ["node", "/app/dist/index.js"]
+ENTRYPOINT ["node", "/app/dist/src/index"]
