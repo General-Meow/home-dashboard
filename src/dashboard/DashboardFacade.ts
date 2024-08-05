@@ -113,15 +113,15 @@ class DashboardFacade {
     async getWeatherData() {
 
         const weatherData = await weatherService.getDashboardWeather();
-        weatherData.timestamp = new Date();
-
-        weatherData.todaysWeather = new WeatherDay('Wednesday', 20, 23, 16, 'Sunny');
-
-        const nextFiveDays = [];
-        for (let i = 0; i < 5; i++) {
-            nextFiveDays.push(new WeatherDay('Monday', 20, 22, 12, 'Cloudy'));
-        }
-        weatherData.nextFiveDays = nextFiveDays;
+        // weatherData.timestamp = new Date();
+        //
+        // weatherData.todaysWeather = new WeatherDay('Wednesday', 20, 23, 16, 'Sunny');
+        //
+        // const nextFiveDays = [];
+        // for (let i = 0; i < 5; i++) {
+        //     nextFiveDays.push(new WeatherDay('Monday', 20, 22, 12, 'Cloudy'));
+        // }
+        // weatherData.nextFiveDays = nextFiveDays;
         return weatherData;
     }
 

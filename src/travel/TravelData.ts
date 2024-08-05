@@ -1,8 +1,10 @@
+import {LineStatus} from "./LineStatus";
+
 export class TravelData {
 
     timestamp: Date;
     busRouteArr: BusRoute[];
-    trainRouteArr: TrainRoute[];
+    trainRouteArr: TrainRoute[] | LineStatus[];
 
     constructor(){
     }
