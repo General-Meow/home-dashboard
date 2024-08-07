@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "tsc",
-    "start": "node --watch dist/src/index",
+    "start": "tsc && node --watch dist/src/index",
     "test": "jest"
   },
   "author": "Paul",

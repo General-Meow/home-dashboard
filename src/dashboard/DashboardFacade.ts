@@ -8,6 +8,7 @@ import {busService} from "../travel/BusService";
 import {tubeService} from "../travel/TubeService";
 import {solarService} from "../solar/SolarService";
 import {weatherService} from "../weather/WeatherService";
+import {DayPrices} from "../octopus/HalfHourPrice";
 
 class DashboardFacade {
 
@@ -46,12 +47,12 @@ class DashboardFacade {
         return dashboardData;
     }
 
-    async getEnergyData() {
-        const energyData = new EnergyData();
-        energyData.timestamp = new Date();
+    async getEnergyData(): Promise<EnergyData> {
 
         const todaysAgilePrices = octopusService.getTodaysAgilePrices();
-        todaysAgilePrices.then(prices => {
+        const energyData = await todaysAgilePrices.then((prices : DayPrices)  => {
+            const energyData = new EnergyData();
+            energyData.timestamp = new Date();
 
             const now = new Date();
             energyData.currentElectricPrice = prices.halfHourPricesArr
@@ -90,10 +91,11 @@ class DashboardFacade {
                 }
             })
 
+            return energyData;
         }).catch(e => {
             console.error('Error while getting data from octopus cache', e);
             return Promise.reject("Error while getting data from octopus cache")
-        })
+        });
 
         return Promise.resolve(energyData);
     }
