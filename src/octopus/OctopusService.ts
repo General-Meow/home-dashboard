@@ -44,7 +44,10 @@ class OctopusService {
             console.log("Cache miss for electric prices, trying to fill the cache");
             this.fillTodaysAgilePricesCache().then(result => {
                 return result;
-            }).catch(error => Promise.reject("No data in cache"));
+            }).catch(error => {
+                console.log("No todays prices data in cache", error);
+                Promise.reject("No todays prices data in cache")
+            });
         }
         return Promise.resolve(prices)
     }
