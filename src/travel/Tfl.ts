@@ -1125,4 +1125,14 @@ export interface OvergroundArrivalResponse {
     expectedArrival: Date;
     timeToLive: Date;
     modeName: string;
+    timing: Timing[];
+}
+
+export interface Timing {
+    "countdownServerAdjustment": Date,
+    "source": Date,
+    "insert": Date,
+    "read": Date,
+    "sent": Date,
+    "received": Date
 }

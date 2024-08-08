@@ -3,7 +3,6 @@ import axios from "axios"
 import {AllStatus, LineStatus, StatusDetail} from "./LineStatus";
 import {TrainRoute} from "./TravelData";
 import TflStatusResponse, {OvergroundArrivalResponse} from "./Tfl";
-import {octopusService} from "../octopus/OctopusService";
 
 class TubeService {
 
@@ -60,49 +59,49 @@ class TubeService {
         this.tubeCache.set('tubeStatus', result);
     }
 
-    fillDashboardStatus(lines: Array<TflStatusResponse>) {
-        const dashboardStatus = lines.map(line => {
+    async fillDashboardStatus(lines: Array<TflStatusResponse>) {
+        const dashboardStatuses = lines.map((line) => {
             const lineName = line.name;
             const statusOk = line.lineStatuses.filter(lineStatus => {
                 return lineStatus.statusSeverity !== 10;
             }).length > 0;
             let nextTimesArr = [];
             const isUnderground = line.modeName === 'tube';
-
-            if (lineName === 'London Overground') {
-                console.info('found london underground')
-                const newCrossOvergroundArrivalTimesUrl = `https://api.tfl.gov.uk/StopPoint/HUBNWX/Arrivals?app_key=${process.env.TFL_API_KEY}`
-                const timesPromise = axios.get(newCrossOvergroundArrivalTimesUrl)
-                    .then(response => {
-                        const data = response.data as Array<OvergroundArrivalResponse>;
-                        return data.filter(entry => {
-                            const now = new Date();
-                            const expectedArrival = new Date(entry.expectedArrival);
-                            return expectedArrival > now;
-                        })
-                        .filter(entry => entry.expectedArrival)
-                        .sort(function (a, b) {
-                            const aDate: Date = a.expectedArrival;
-                            const bDate: Date = b.expectedArrival;
-                            return aDate.getTime() - bDate.getTime();
-                        })
-                        .map(entry => new Date(entry.expectedArrival));
-                    })
-                    .then(times => {
-
-                    const statuses: Array<LineStatus | TrainRoute> = (this.tubeCache.get('dashboardTubeStatus') as AllStatus).lineStatuses;
-                    const overground = statuses.filter(entry  => {
-                        return entry.name === 'London Overground';
-                    })[0] as TrainRoute;
-                    overground.nextTimesArr = Array.from(times);
-                    this.tubeCache.set('dashboardTubeStatus', statuses);
-
-                }).catch(error => console.log('Error getting overground times at new cross'));
-            }
             return new TrainRoute(lineName, statusOk, nextTimesArr, isUnderground);
         })
 
-        const result = new AllStatus(dashboardStatus, new Date);
+        for (let dashboardStatus of dashboardStatuses) {
+            if (dashboardStatus.name === 'London Overground') {
+                console.info('found london underground')
+                const newCrossOvergroundArrivalTimesUrl = `https://api.tfl.gov.uk/StopPoint/HUBNWX/Arrivals?app_key=${process.env.TFL_API_KEY}`
+                const overgroundTrainTimes = await axios.get(newCrossOvergroundArrivalTimesUrl)
+                    .then(response => {
+                        const data = response.data as Array<OvergroundArrivalResponse>;
+
+                        return data
+                            .map(entry => {
+                                entry.expectedArrival = new Date(entry.expectedArrival);
+                                return entry;
+                            })
+                            .filter(entry => {
+                                const now = new Date();
+                                return entry.expectedArrival > now;
+                            })
+                            .filter(entry => entry.expectedArrival)
+                            .sort(function (a, b) {
+                                const aDate: Date = a.expectedArrival;
+                                console.log('aDate', aDate);
+                                const bDate: Date = b.expectedArrival;
+                                return aDate.getTime() - bDate.getTime();
+                            })
+                            .map(entry => new Date(entry.expectedArrival));
+                    })
+
+                dashboardStatus.nextTimesArr = overgroundTrainTimes;
+            }
+        }
+
+        const result = new AllStatus(dashboardStatuses, new Date);
         this.tubeCache.set('dashboardTubeStatus', result);
     }
 }
