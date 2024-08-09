@@ -49,13 +49,13 @@ class DashboardFacade {
 
     async getEnergyData(): Promise<EnergyData> {
 
-        const todaysAgilePrices = octopusService.getTodaysAgilePrices();
-        const energyData = await todaysAgilePrices.then((prices : DayPrices)  => {
+        try {
+            const todaysAgilePrices: DayPrices = await octopusService.getTodaysAgilePrices();
             const energyData = new EnergyData();
             energyData.timestamp = new Date();
 
             const now = new Date();
-            energyData.currentElectricPrice = prices.halfHourPricesArr
+            energyData.currentElectricPrice = todaysAgilePrices.halfHourPricesArr
                 .find(halfHourPrice => (now >= halfHourPrice.fromDateTime) && (now <= halfHourPrice.toDateTime))
                 .price;
 
@@ -64,8 +64,8 @@ class DashboardFacade {
             let cheapest = {price: 100};
             let expensive = {price: -100};
 
-            if(prices.halfHourPricesArr) {
-                prices.halfHourPricesArr.forEach(entry => {
+            if (todaysAgilePrices.halfHourPricesArr) {
+                todaysAgilePrices.halfHourPricesArr.forEach(entry => {
                     if (entry.price < cheapest.price) {
                         cheapest = entry;
                     }
@@ -76,7 +76,7 @@ class DashboardFacade {
             }
             energyData.cheapestToday = cheapest.price;
             energyData.expensiveToday = expensive.price;
-            energyData.next3HoursPriceArr = prices.halfHourPricesArr;
+            energyData.next3HoursPriceArr = todaysAgilePrices.halfHourPricesArr;
 
             if (cheapest.price <= 0) {
                 energyData.alertMessage = 'Free Electric today';
@@ -92,12 +92,12 @@ class DashboardFacade {
             })
 
             return energyData;
-        }).catch(e => {
+        } catch (e) {
             console.error('Error while getting data from octopus cache', e);
-            return Promise.reject("Error while getting data from octopus cache")
-        });
-
-        return Promise.resolve(energyData);
+            const energyData = new EnergyData();
+            energyData.errorMessage = `Could not get energy data: ${JSON.stringify(e)}`;
+            return energyData;
+        }
     }
 
     async getTravelData() {

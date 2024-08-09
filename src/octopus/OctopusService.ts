@@ -38,16 +38,11 @@ class OctopusService {
         this.standingChargePriceUrl = 'https://api.octopus.energy/v1/products/AGILE-FLEX-BB-23-02-08/electricity-tariffs/E-1R-AGILE-FLEX-BB-23-02-08-C/standing-charges/'
     }
 
-    getTodaysAgilePrices(): Promise<DayPrices> {
-        const prices = this.octopusCache.get('todaysPrices') as DayPrices
+    async getTodaysAgilePrices(): Promise<DayPrices> {
+        const prices = this.octopusCache.get<DayPrices>('todaysPrices')
         if (prices === undefined) {
             console.log("Cache miss for electric prices, trying to fill the cache");
-            this.fillTodaysAgilePricesCache().then(result => {
-                return result;
-            }).catch(error => {
-                console.log("No todays prices data in cache", error);
-                Promise.reject("No todays prices data in cache")
-            });
+            return this.fillTodaysAgilePricesCache();
         }
         return Promise.resolve(prices)
     }
@@ -130,13 +125,15 @@ class OctopusService {
 
         const todaysPriceUrl = `${this.unitPricesUrl}?period_from=${startOfToday.toISOString()}&period_to=${endOfToday.toISOString()}`;
 
-        return axios.get(todaysPriceUrl, {
-            auth: {
-                username: process.env.OCTOPUS_API_KEY,
-                password: undefined
-            }
-        }).then(response => {
-            const unitPrices: OctopusPrice[] = response.data.results as OctopusPrice[];
+        try {
+            const {data} = await axios.get(todaysPriceUrl, {
+                auth: {
+                    username: process.env.OCTOPUS_API_KEY,
+                    password: undefined
+                }
+            });
+
+            const unitPrices: OctopusPrice[] = data.results as OctopusPrice[];
             const prices = unitPrices
                 .sort((a, b) => {
                     return new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime()
@@ -150,10 +147,10 @@ class OctopusService {
 
             this.octopusCache.set('todaysPrices', dayPrices);
             return dayPrices;
-        }).catch(error => {
+        } catch (error) {
             console.error(error);
             throw error;
-        })
+        }
     }
 
     fillTomorrowsAgilePricesCache() {
@@ -239,6 +236,10 @@ class OctopusService {
         }).catch(error => {
             console.error('error in getting todays price cache', error);
         });
+    }
+
+    async blah() {
+        return Promise.reject('reason blah');
     }
 }
 

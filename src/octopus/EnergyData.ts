@@ -9,6 +9,7 @@ export default class EnergyData {
     cheapestToday: number;
     expensiveToday: number;
     alertMessage: string
+    errorMessage: string;
 
     constructor(){}
 }
