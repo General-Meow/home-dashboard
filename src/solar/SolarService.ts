@@ -16,19 +16,26 @@ export class SolarService {
     }
 
     getEnergyFlows = async (): Promise<SolarData> => {
-        const solarCache: SolarData = this.nodeCache.get('solarCache')
+        let solarCache: SolarData = this.nodeCache.get('solarCache')
         if (solarCache === undefined) {
+            console.log("Cache miss for solar values, attempting to fill it now...")
+            try {
+                this.fillCache();
+                return this.nodeCache.get("solarCache");
+            } catch (exception) {
+                console.log("Filling the cache for solar data failed");
+            }
             console.log("Cache miss for solar values, returning nothing")
             return Promise.reject("No data in cache")
         }
         return Promise.resolve(solarCache)
     }
 
-    fillCache() {
+    fillCache(): void {
         const readInverterPromise1 = axios.get(this.inverterAddress1);
         const readInverterPromise2 = axios.get(this.inverterAddress2);
 
-        return Promise
+        Promise
             .all([readInverterPromise1, readInverterPromise2])
             .then((allPromiseResultsArray) => {
                 const response1 = allPromiseResultsArray[0];
@@ -74,6 +81,7 @@ export class SolarService {
             })
             .catch(error => {
                 console.error('solar error', error);
+                throw error;
             });
     }
 }
