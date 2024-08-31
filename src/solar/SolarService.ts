@@ -19,14 +19,12 @@ export class SolarService {
         let solarCache: SolarData = this.nodeCache.get('solarCache')
         if (solarCache === undefined) {
             console.log("Cache miss for solar values, attempting to fill it now...")
-            try {
-                this.fillCache();
-                return this.nodeCache.get("solarCache");
-            } catch (exception) {
-                console.log("Filling the cache for solar data failed");
+            this.fillCache();
+            solarCache = this.nodeCache.get("solarCache");
+            if (solarCache === undefined) {
+                console.log("Cache miss for solar values, returning nothing")
+                return Promise.reject("No data in cache")
             }
-            console.log("Cache miss for solar values, returning nothing")
-            return Promise.reject("No data in cache")
         }
         return Promise.resolve(solarCache)
     }
@@ -80,8 +78,7 @@ export class SolarService {
                 // console.log('set solar cache data', data);
             })
             .catch(error => {
-                console.error('solar error', error);
-                throw error;
+                console.error('Exception thrown while getting solar data:', error);
             });
     }
 }
