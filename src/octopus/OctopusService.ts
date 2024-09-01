@@ -1,7 +1,7 @@
 import NodeCache from "node-cache";
-import axios from "axios";
+import axios, {AxiosResponse, AxiosRequestConfig} from "axios";
 import {DayPrices, HalfHourPrice} from "./HalfHourPrice";
-import {OctopusPrice} from "./Octopus";
+import {OctopusPrice, OctopusResult} from "./Octopus";
 
 /**
  * NOTE
@@ -100,11 +100,13 @@ class OctopusService {
 
             return currentGasTariff.tariff_code;
         }).catch(error => {
-            console.error(error)
+            console.error(error);
+            return
         })
     }
 
     async fillTodaysAgilePricesCache(): Promise<DayPrices> {
+        console.log('filling todays agile prices cache');
         var now = new Date();
         var currentCachedTodaysPrice: DayPrices = this.octopusCache.get('todaysPrices');
 
@@ -154,6 +156,8 @@ class OctopusService {
     }
 
     fillTomorrowsAgilePricesCache() {
+        console.log('filling tomorrows agile prices cache');
+
         const today = new Date();
 
         const startOfTomorrow = new Date();
@@ -195,7 +199,7 @@ class OctopusService {
     }
 
     fillTodaysGasPriceCache() {
-
+        console.log('filling todays gas price cache')
         this.getGasTariff()
             .then(gasTariff => {
                     this.getGasPrice(gasTariff).then(gasPrice => {
@@ -211,10 +215,12 @@ class OctopusService {
                 .then(gasPrice => {
                     this.octopusCache.set('todaysGasPrice', gasPrice);
                 }).catch(error => console.error);
+        }).catch(error => {
+            console.error('getting gasTariff error', error);
         });
     }
 
-    getGasPrice(gasTariff): Promise<number> {
+    async getGasPrice(gasTariff) {
         const productCode = gasTariff.slice(5, gasTariff.length - 2);
         var today = new Date();
         const dateTimeFormatter = new Intl.DateTimeFormat("en-GB", {
@@ -226,16 +232,22 @@ class OctopusService {
         var tomorrow = today.setDate(today.getDate() + 1)
         var tomorrowStr = dateTimeFormatter.format(tomorrow).split("/").reverse().join('-');
         const url = `https://api.octopus.energy/v1/products/${productCode}/gas-tariffs/${gasTariff}/standard-unit-rates/?period_from=${todayStr}&period_to=${tomorrowStr}`;
-        return axios.get(url, {
-            auth: {
+
+        let config = {auth: {
                 username: process.env.OCTOPUS_API_KEY,
                 password: undefined
             }
-        }).then(response => {
-            return response.data.results[0].value_inc_vat;
-        }).catch(error => {
-            console.error('error in getting todays price cache', error);
-        });
+        } as AxiosRequestConfig<OctopusResult>;
+
+        try {
+            let {data} = await axios.get(url, config);
+            return Promise.resolve(data.results[0].value_inc_vat);
+        } catch (e) {
+
+            return Promise.reject(0.0);
+        }
+
+
     }
 
     async blah() {

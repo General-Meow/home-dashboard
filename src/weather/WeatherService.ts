@@ -50,8 +50,8 @@ class WeatherService {
     }
 
 
-
     async fillDashboardCache(): Promise<void | WeatherData> {
+        console.log('filling dashboard cache');
         return axios.get(this.dashboardUrl)
             .then(response => {
                 const responseData = response.data;
@@ -84,6 +84,7 @@ class WeatherService {
     }
 
     async fillTodaysCache(): Promise<void | Weather> {
+        console.log('filling todays weather cache');
         return axios.get(this.todayUrl)
             .then((response) => {
 
@@ -119,6 +120,7 @@ class WeatherService {
     }
 
     async fillForecastCache(): Promise<void | Forecast> {
+        console.log('filling forecast weather cache');
         try {
             const response = await axios.get(this.tenDayForecastUrl);
             const data = response.data;

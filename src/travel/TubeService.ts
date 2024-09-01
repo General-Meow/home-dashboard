@@ -33,6 +33,7 @@ class TubeService {
     }
 
     async fillTubeLineStatusCache() {
+        console.log('filling tube line status cache');
         //get the data and cache
         return axios.get(this.tflUrl)
             .then(response => {

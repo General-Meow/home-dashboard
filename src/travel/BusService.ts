@@ -28,6 +28,7 @@ class BusService {
     }
 
     cacheAllBusRoutes = () => {
+        console.log('filling bus route cache');
         const route321ToRiverston = this.createBusRouteUrl("321", '490009689T');
         const route321ToNewCross = this.createBusRouteUrl("321", '490014334W');
         const route225ToLewisham = this.createBusRouteUrl("225", '490006451E');

@@ -27,24 +27,36 @@ app.listen(port, () => {
     console.log('scheduling job')
     //run every 10 minutes
     const scheduleJob = schedule.scheduleJob('*/10 * * * *', function(){
-        tubeService.fillTubeLineStatusCache();
-        weatherService.fillTodaysCache();
-        weatherService.fillForecastCache();
-        weatherService.fillDashboardCache();
-        solarService.fillCache();
-        busService.cacheAllBusRoutes();
+        try {
+            tubeService.fillTubeLineStatusCache();
+            weatherService.fillTodaysCache();
+            weatherService.fillForecastCache();
+            weatherService.fillDashboardCache();
+            solarService.fillCache();
+            busService.cacheAllBusRoutes();
+        } catch (error) {
+            console.error('schedule job error in 10 minutes', error);
+        }
     });
 
     const every30MinScheduleJob = schedule.scheduleJob('*/30 * * * *', function(){
-        octopusService.fillTodaysAgilePricesCache();
-        octopusService.fillTomorrowsAgilePricesCache();
+        try {
+            octopusService.fillTodaysAgilePricesCache();
+            octopusService.fillTomorrowsAgilePricesCache();
+        } catch (error) {
+            console.error('schedule job error in 30 minutes', error);
+        }
     });
 
     const every6HourScheduleJob = schedule.scheduleJob('0 */6 * * *', function(){
     });
 
     const every24HourScheduleJob = schedule.scheduleJob('1 0 * * *', function(){
-        octopusService.fillTodaysGasPriceCache();
+        try {
+            octopusService.fillTodaysGasPriceCache();
+        } catch (error) {
+            console.error('schedule job error in 24 hours', error);
+        }
     });
 
 })

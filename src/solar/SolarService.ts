@@ -19,7 +19,7 @@ export class SolarService {
         let solarCache: SolarData = this.nodeCache.get('solarCache')
         if (solarCache === undefined) {
             console.log("Cache miss for solar values, attempting to fill it now...")
-            this.fillCache();
+            await this.fillCache();
             solarCache = this.nodeCache.get("solarCache");
             if (solarCache === undefined) {
                 console.log("Cache miss for solar values, returning nothing")
@@ -29,57 +29,58 @@ export class SolarService {
         return Promise.resolve(solarCache)
     }
 
-    fillCache(): void {
-        const readInverterPromise1 = axios.get(this.inverterAddress1);
-        const readInverterPromise2 = axios.get(this.inverterAddress2);
+    async fillCache(): Promise<void> {
+        console.log('filling solar cache');
+        try {
+            const readInverterPromise1 = await axios.get(this.inverterAddress1);
+            const readInverterPromise2 = await axios.get(this.inverterAddress2);
 
-        Promise
-            .all([readInverterPromise1, readInverterPromise2])
-            .then((allPromiseResultsArray) => {
-                const response1 = allPromiseResultsArray[0];
-                const response2 = allPromiseResultsArray[1];
+            const response1 = readInverterPromise1;
+            const response2 = readInverterPromise2;
 
-                // debug.log('inv12',response2.data);
-                const inverterFlows1 = response1.data.Power.Flows;
-                const inverterPower1 = response1.data.Power.Power;
-                const inverterFlows2 = response2.data.Power.Flows;
-                const inverterPower2 = response2.data.Power.Power;
-                const rawInverter2 = response2.data.raw.invertor;
-                // debug.log('inverter 2', inverterPower2);
-                // debug.log('inverter 2', inverterFlows2);
+            // debug.log('inv12',response2.data);
+            const inverterFlows1 = response1.data.Power.Flows;
+            const inverterPower1 = response1.data.Power.Power;
+            const inverterFlows2 = response2.data.Power.Flows;
+            const inverterPower2 = response2.data.Power.Power;
+            const rawInverter2 = response2.data.raw.invertor;
+            // debug.log('inverter 2', inverterPower2);
+            // debug.log('inverter 2', inverterFlows2);
 
-                const rows = [];
-                const generatingWatts = inverterPower1.PV_Power + inverterPower2.PV_Power;
-                const pvgenerating = new SolarEnergyData('Panel', 'Generating from solar', generatingWatts, 'w');
+            const rows = [];
+            const generatingWatts = inverterPower1.PV_Power + inverterPower2.PV_Power;
+            const pvgenerating = new SolarEnergyData('Panel', 'Generating from solar', generatingWatts, 'w');
 
-                const houseUsageWatts = inverterPower2.Load_Power;
-                const houseUsage = new SolarEnergyData('Home', 'House Usage', houseUsageWatts, 'w');
+            const houseUsageWatts = inverterPower2.Load_Power + inverterPower1.Load_Power;
+            const houseUsage = new SolarEnergyData('Home', 'House Usage', houseUsageWatts, 'w');
 
-                const batteryPercentage = rawInverter2.battery_percent;
-                const battery = new SolarEnergyData('Battery', 'Battery Charge', batteryPercentage, '%');
+            const batteryPercentage = rawInverter2.battery_percent;
+            const battery = new SolarEnergyData('Battery', 'Battery Charge', batteryPercentage, '%');
 
-                const predicted = 0;
-                const predictionCharge = new SolarEnergyData('Predicted', 'Predicted Generation', predicted, 'w');
+            const predicted = 0;
+            const predictionCharge = new SolarEnergyData('Predicted', 'Predicted Generation', predicted, 'w');
 
-                const data: SolarData = new SolarData(new Date(), [pvgenerating, houseUsage, battery, predictionCharge]);
+            const data: SolarData = new SolarData(new Date(), [pvgenerating, houseUsage, battery, predictionCharge]);
 
-                //     = {
-                //     asOf: new Date(),
-                //     batteryToGrid: `${inverterFlows1.Battery_to_Grid + inverterFlows2.Battery_to_Grid}w`,
-                //     batteryToHouse: `${inverterFlows1.Battery_to_House + inverterFlows2.Battery_to_House}w`,
-                //     gridToBattery: `${inverterFlows1.Grid_to_Battery + inverterFlows2.Grid_to_Battery}w`,
-                //     gridToHouse: `${inverterFlows1.Grid_to_House + inverterFlows2.Grid_to_House}w`,
-                //     solarToBattery: `${inverterFlows1.Solar_to_Battery + inverterFlows2.Solar_to_Battery}w`,
-                //     solarToGrid: `${inverterFlows1.Solar_to_Grid + inverterFlows2.Solar_to_Grid}w`,
-                //     solarToHouse: `${inverterFlows1.Solar_to_House + inverterFlows2.Solar_to_House}w`,
-                //     batteryChargeLevel: `${rawInverter2.battery_percent}%`,
-                // };
-                this.nodeCache.set("solarCache", data);
-                // console.log('set solar cache data', data);
-            })
-            .catch(error => {
+            //     = {
+            //     asOf: new Date(),
+            //     batteryToGrid: `${inverterFlows1.Battery_to_Grid + inverterFlows2.Battery_to_Grid}w`,
+            //     batteryToHouse: `${inverterFlows1.Battery_to_House + inverterFlows2.Battery_to_House}w`,
+            //     gridToBattery: `${inverterFlows1.Grid_to_Battery + inverterFlows2.Grid_to_Battery}w`,
+            //     gridToHouse: `${inverterFlows1.Grid_to_House + inverterFlows2.Grid_to_House}w`,
+            //     solarToBattery: `${inverterFlows1.Solar_to_Battery + inverterFlows2.Solar_to_Battery}w`,
+            //     solarToGrid: `${inverterFlows1.Solar_to_Grid + inverterFlows2.Solar_to_Grid}w`,
+            //     solarToHouse: `${inverterFlows1.Solar_to_House + inverterFlows2.Solar_to_House}w`,
+            //     batteryChargeLevel: `${rawInverter2.battery_percent}%`,
+            // };
+            this.nodeCache.set("solarCache", data);
+            // console.log('set solar cache data', data);
+            
+           } catch(error) {
                 console.error('Exception thrown while getting solar data:', error);
-            });
+                this.nodeCache.del("solarCache");
+           }
+            
     }
 }
 
