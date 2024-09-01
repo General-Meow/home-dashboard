@@ -150,8 +150,8 @@ class OctopusService {
             this.octopusCache.set('todaysPrices', dayPrices);
             return dayPrices;
         } catch (error) {
-            console.error(error);
-            throw error;
+            console.error('exception thrown during fillTodaysAgilePricesCache', error);
+            this.octopusCache.del('todaysPrices');
         }
     }
 
@@ -194,7 +194,8 @@ class OctopusService {
                 return tomorrowsPrices;
             })
             .catch(error => {
-                console.error(error)
+                console.error('exception thrown during fillTomorrowsAgilePricesCache', error)
+                this.octopusCache.del('tomorrowsPrices');
             })
     }
 
