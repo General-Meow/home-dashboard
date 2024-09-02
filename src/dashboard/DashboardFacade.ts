@@ -85,12 +85,8 @@ class DashboardFacade {
             }
 
             const todaysGasUnitPricePromise = octopusService.getTodaysGasPrice();
-            todaysGasUnitPricePromise.then(price => {
-                if (price) {
-                    energyData.todaysGasPrice = price;
-                }
-            })
-
+            let price = await todaysGasUnitPricePromise;
+            energyData.todaysGasPrice = price;
             return energyData;
         } catch (e) {
             console.error('Error while getting data from octopus cache', e);

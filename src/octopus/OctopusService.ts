@@ -56,7 +56,7 @@ class OctopusService {
         return Promise.resolve(prices)
     }
 
-    getTodaysGasPrice(): Promise<void | number> {
+    getTodaysGasPrice(): Promise<number> {
         const prices = this.octopusCache.get('todaysGasPrice') as number
         if (prices === undefined) {
             console.log("Cache miss for gas prices, returning nothing")
