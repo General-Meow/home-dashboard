@@ -111,6 +111,7 @@ class OctopusService {
         var currentCachedTodaysPrice: DayPrices = this.octopusCache.get('todaysPrices');
 
         if (currentCachedTodaysPrice !== undefined) {
+            console.log('data found in todaysPrices cache')
             //exit early if the currently stored price is the same as today
             var asOfDateTime = currentCachedTodaysPrice.asOfDateTime;
             if (asOfDateTime !== undefined &&
@@ -118,40 +119,41 @@ class OctopusService {
                 now.getMonth() === asOfDateTime.getMonth()) {
                 return currentCachedTodaysPrice;
             }
-        }
+        } else {
+            console.log('no data found in todaysPrices cache, filling cache now')
+            const startOfToday = new Date();
+            startOfToday.setUTCHours(0, 0, 0, 0)
+            const endOfToday = new Date();
+            endOfToday.setUTCHours(23, 59, 0, 0)
 
-        const startOfToday = new Date();
-        startOfToday.setUTCHours(0, 0, 0, 0)
-        const endOfToday = new Date();
-        endOfToday.setUTCHours(23, 59, 0, 0)
+            const todaysPriceUrl = `${this.unitPricesUrl}?period_from=${startOfToday.toISOString()}&period_to=${endOfToday.toISOString()}`;
 
-        const todaysPriceUrl = `${this.unitPricesUrl}?period_from=${startOfToday.toISOString()}&period_to=${endOfToday.toISOString()}`;
+            try {
+                const {data} = await axios.get(todaysPriceUrl, {
+                    auth: {
+                        username: process.env.OCTOPUS_API_KEY,
+                        password: undefined
+                    }
+                });
 
-        try {
-            const {data} = await axios.get(todaysPriceUrl, {
-                auth: {
-                    username: process.env.OCTOPUS_API_KEY,
-                    password: undefined
-                }
-            });
+                const unitPrices: OctopusPrice[] = data.results as OctopusPrice[];
+                const prices = unitPrices
+                    .sort((a, b) => {
+                        return new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime()
+                    })
+                    .map(unitPrice => {
+                        return new HalfHourPrice(unitPrice.value_inc_vat,
+                            new Date(unitPrice.valid_from), new Date(unitPrice.valid_to))
+                    })
 
-            const unitPrices: OctopusPrice[] = data.results as OctopusPrice[];
-            const prices = unitPrices
-                .sort((a, b) => {
-                    return new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime()
-                })
-                .map(unitPrice => {
-                    return new HalfHourPrice(unitPrice.value_inc_vat,
-                        new Date(unitPrice.valid_from), new Date(unitPrice.valid_to))
-                })
+                const dayPrices: DayPrices = new DayPrices(startOfToday, prices, new Date());
 
-            const dayPrices: DayPrices = new DayPrices(startOfToday, prices, new Date());
-
-            this.octopusCache.set('todaysPrices', dayPrices);
-            return dayPrices;
-        } catch (error) {
-            console.error('exception thrown during fillTodaysAgilePricesCache', error);
-            this.octopusCache.del('todaysPrices');
+                this.octopusCache.set('todaysPrices', dayPrices);
+                return dayPrices;
+            } catch (error) {
+                console.error('exception thrown during fillTodaysAgilePricesCache', error);
+                this.octopusCache.del('todaysPrices');
+            }
         }
     }
 

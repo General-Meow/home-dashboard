@@ -89,6 +89,7 @@ class DashboardFacade {
             energyData.todaysGasPrice = price;
             return energyData;
         } catch (e) {
+
             console.error('Error while getting data from octopus cache', e);
             const energyData = new EnergyData();
             energyData.errorMessage = `Could not get energy data: ${JSON.stringify(e)}`;
