@@ -60,7 +60,7 @@ class OctopusService {
         const prices = this.octopusCache.get('todaysGasPrice') as number
         if (prices === undefined) {
             console.log("Cache miss for gas prices, returning nothing")
-            return Promise.reject("No data in cache")
+            return Promise.reject("No data in todaysGasPrice cache")
         }
         return Promise.resolve(prices)
     }
@@ -69,7 +69,7 @@ class OctopusService {
         const prices = this.octopusCache.get('gasTariff')
         if (prices === undefined) {
             console.log("Cache miss for gas tariff, returning nothing")
-            return Promise.reject("No data in cache")
+            return Promise.reject("No data in gasTariff cache")
         }
         return Promise.resolve(prices)
     }
@@ -201,26 +201,23 @@ class OctopusService {
             })
     }
 
-    fillTodaysGasPriceCache() {
+    async fillTodaysGasPriceCache() {
         console.log('filling todays gas price cache')
-        this.getGasTariff()
-            .then(gasTariff => {
-                    this.getGasPrice(gasTariff).then(gasPrice => {
-                            this.octopusCache.set('todaysGasPrice', gasPrice);
-                        }
-                    ).catch(error => console.error);
-                }
-            ).catch(error => {
-            console.error('getting gasTariff error, now calling fillGasTariffCache()', error);
-            return this.fillGasTariffCache();
-        }).then(gasTariff => {
-            this.getGasPrice(gasTariff)
-                .then(gasPrice => {
-                    this.octopusCache.set('todaysGasPrice', gasPrice);
-                }).catch(error => console.error);
-        }).catch(error => {
-            console.error('getting gasTariff error', error);
-        });
+        try {
+            const gasTariff = await this.getGasTariff()
+            const gasPrice = await this.getGasPrice(gasTariff);
+            this.octopusCache.set('todaysGasPrice', gasPrice);
+        } catch(error) {
+            console.error('getting gasTariff error, now calling fillGasTariffCache() to try and fill todaysGasPrice cache', error);
+            try {
+                const gasTariff = await this.fillGasTariffCache();
+                const gasPrice = await this.getGasPrice(gasTariff)
+                this.octopusCache.set('todaysGasPrice', gasPrice);
+                console.log('setting todaysGasPrice cache worked')
+            }catch (error) {
+                console.error('failed to set todaysGasPrice cache', error);
+            }
+        }
     }
 
     async getGasPrice(gasTariff) {

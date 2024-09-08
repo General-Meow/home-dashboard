@@ -9,40 +9,40 @@ import {busService} from "./travel/BusService";
 
 const port = process.env.PORT || 3000
 
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log("server is up on port", port);
 
-    octopusService.fillTodaysGasPriceCache();
-    octopusService.fillTodaysAgilePricesCache();
-    octopusService.fillTomorrowsAgilePricesCache();
-    tubeService.fillTubeLineStatusCache();
-    weatherService.fillTodaysCache();
-    weatherService.fillForecastCache();
+    await octopusService.fillTodaysGasPriceCache();
+    await octopusService.fillTodaysAgilePricesCache();
+    await octopusService.fillTomorrowsAgilePricesCache();
+    await tubeService.fillTubeLineStatusCache();
+    await weatherService.fillTodaysCache();
+    await weatherService.fillForecastCache();
 
-    weatherService.fillDashboardCache();
-    solarService.fillCache();
-    busService.cacheAllBusRoutes();
+    await weatherService.fillDashboardCache();
+    await solarService.fillCache();
+    await busService.cacheAllBusRoutes();
 
 
     console.log('scheduling job')
     //run every 10 minutes
-    const scheduleJob = schedule.scheduleJob('*/10 * * * *', function(){
+    const scheduleJob = schedule.scheduleJob('*/10 * * * *', async function(){
         try {
-            tubeService.fillTubeLineStatusCache();
-            weatherService.fillTodaysCache();
-            weatherService.fillForecastCache();
-            weatherService.fillDashboardCache();
-            solarService.fillCache();
-            busService.cacheAllBusRoutes();
+            await tubeService.fillTubeLineStatusCache();
+            await weatherService.fillTodaysCache();
+            await weatherService.fillForecastCache();
+            await weatherService.fillDashboardCache();
+            await solarService.fillCache();
+            await busService.cacheAllBusRoutes();
         } catch (error) {
             console.error('schedule job error in 10 minutes', error);
         }
     });
 
-    const every30MinScheduleJob = schedule.scheduleJob('*/30 * * * *', function(){
+    const every30MinScheduleJob = schedule.scheduleJob('*/30 * * * *', async function(){
         try {
-            octopusService.fillTodaysAgilePricesCache();
-            octopusService.fillTomorrowsAgilePricesCache();
+            await octopusService.fillTodaysAgilePricesCache();
+            await octopusService.fillTomorrowsAgilePricesCache();
         } catch (error) {
             console.error('schedule job error in 30 minutes', error);
         }
@@ -51,9 +51,9 @@ app.listen(port, () => {
     const every6HourScheduleJob = schedule.scheduleJob('0 */6 * * *', function(){
     });
 
-    const every24HourScheduleJob = schedule.scheduleJob('1 0 * * *', function(){
+    const every24HourScheduleJob = schedule.scheduleJob('1 0 * * *', async function(){
         try {
-            octopusService.fillTodaysGasPriceCache();
+            await octopusService.fillTodaysGasPriceCache();
         } catch (error) {
             console.error('schedule job error in 24 hours', error);
         }
