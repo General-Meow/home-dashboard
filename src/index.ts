@@ -43,6 +43,7 @@ app.listen(port, async () => {
         try {
             await octopusService.fillTodaysAgilePricesCache();
             await octopusService.fillTomorrowsAgilePricesCache();
+            await octopusService.fillTodaysGasPriceCache();
         } catch (error) {
             console.error('schedule job error in 30 minutes', error);
         }
@@ -51,13 +52,13 @@ app.listen(port, async () => {
     const every6HourScheduleJob = schedule.scheduleJob('0 */6 * * *', function(){
     });
 
-    const every24HourScheduleJob = schedule.scheduleJob('1 0 * * *', async function(){
-        try {
-            await octopusService.fillTodaysGasPriceCache();
-        } catch (error) {
-            console.error('schedule job error in 24 hours', error);
-        }
-    });
+    // const every24HourScheduleJob = schedule.scheduleJob('1 0 * * *', async function(){
+    //     try {
+    //         await octopusService.fillTodaysGasPriceCache();
+    //     } catch (error) {
+    //         console.error('schedule job error in 24 hours', error);
+    //     }
+    // });
 
 })
 

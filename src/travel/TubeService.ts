@@ -91,7 +91,6 @@ class TubeService {
                             .filter(entry => entry.expectedArrival)
                             .sort(function (a, b) {
                                 const aDate: Date = a.expectedArrival;
-                                console.log('aDate', aDate);
                                 const bDate: Date = b.expectedArrival;
                                 return aDate.getTime() - bDate.getTime();
                             })

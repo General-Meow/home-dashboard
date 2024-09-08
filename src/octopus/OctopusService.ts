@@ -258,7 +258,7 @@ class OctopusService {
     }
 }
 
-const ttl15Mins = 900
+const ttl30Mins = 1800
 const checkEvery2Mins = 120
 
-export const octopusService = new OctopusService(new NodeCache({stdTTL: ttl15Mins, checkperiod: checkEvery2Mins}));
+export const octopusService = new OctopusService(new NodeCache({stdTTL: ttl30Mins, checkperiod: checkEvery2Mins}));
