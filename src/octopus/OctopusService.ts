@@ -205,7 +205,10 @@ class OctopusService {
         console.log('filling todays gas price cache')
         try {
             const gasTariff = await this.getGasTariff()
+            console.log('fillTodaysGasPriceCache, got gassTariff of ', gasTariff);
+            console.log('fillTodaysGasPriceCache, looking for gas price ', gasTariff);
             const gasPrice = await this.getGasPrice(gasTariff);
+            console.log('fillTodaysGasPriceCache, got gas prices of ', gasPrice);
             this.octopusCache.set('todaysGasPrice', gasPrice);
         } catch(error) {
             console.error('getting gasTariff error, now calling fillGasTariffCache() to try and fill todaysGasPrice cache', error);
@@ -240,11 +243,11 @@ class OctopusService {
         } as AxiosRequestConfig<OctopusResult>;
 
         try {
-            let {data} = await axios.get(url, config);
-            return Promise.resolve(data.results[0].value_inc_vat);
+            let response = await axios.get(url, config);
+            return Promise.resolve(response.data.results[0].value_inc_vat);
         } catch (e) {
-
-            return Promise.reject(0.0);
+            console.error('error thrown when getting todays prices, ', e);
+            return Promise.reject('something went wrong making a request to get todays prices');
         }
 
 
