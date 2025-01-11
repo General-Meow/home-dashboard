@@ -34,7 +34,7 @@ class OctopusService {
 
         this.octopusCache = cache
         this.accountUrl = `https://api.octopus.energy/v1/accounts/${accountNumber}`;
-        this.unitPricesUrl = 'https://api.octopus.energy/v1/products/AGILE-FLEX-BB-23-02-08/electricity-tariffs/E-1R-AGILE-FLEX-BB-23-02-08-C/standard-unit-rates'
+        this.unitPricesUrl = 'https://api.octopus.energy/v1/products/AGILE-23-12-06/electricity-tariffs/E-1R-AGILE-23-12-06-C/standard-unit-rates'
         this.standingChargePriceUrl = 'https://api.octopus.energy/v1/products/AGILE-FLEX-BB-23-02-08/electricity-tariffs/E-1R-AGILE-FLEX-BB-23-02-08-C/standing-charges/'
     }
 
