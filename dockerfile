@@ -1,4 +1,4 @@
-FROM node:slim
+FROM node:lts-alpine
 MAINTAINER "Paul Hoang 2024"
 #set NODE_ENV to production using -e flag in production to decrease the logging
 ENV NODE_ENV="development"
