@@ -5,6 +5,7 @@ ENV NODE_ENV="development"
 ENV OCTOPUS_API_KEY="docker default octopus api key - override"
 ENV OCTOPUS_ACCOUNT_NUMBER="docker default octopus account number - override"
 ENV TFL_API_KEY="docker default tfl api key - override"
+ENV GIVENGERGY_API_KEY: "default givenergy key - override"
 
 WORKDIR /app
 

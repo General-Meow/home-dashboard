@@ -1,0 +1,5 @@
+
+releases:
+  - name: home-dashboard
+    namespace: default
+    chart: ./charts/home-dashboard

@@ -16,7 +16,7 @@ app.use(cors({
 
 //setup the view engine
 app.set('view engine', 'hbs')
-
+app.set('base', 'home-dashboard-service')
 //expose a public directory to allow access to basic html pages
 app.use(express.static(path.join(__dirname, '../public')))
 

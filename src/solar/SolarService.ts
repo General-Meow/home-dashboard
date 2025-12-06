@@ -8,11 +8,19 @@ export class SolarService {
     nodeCache: NodeCache;
     inverterAddress1: string;
     inverterAddress2: string;
+    givenergyGetConfig: {}
 
     constructor(nodeCache) {
         this.nodeCache = nodeCache
-        this.inverterAddress1 = 'http://192.168.68.50:6345/readData';
-        this.inverterAddress2 = 'http://192.168.68.50:6346/readData';
+        this.inverterAddress1 = 'https://api.givenergy.cloud/v1/inverter/FA2302G081/system-data/latest';
+        this.inverterAddress2 = 'https://api.givenergy.cloud/v1/inverter/FA2308G803/system-data/latest'; //has battery
+        this.givenergyGetConfig = {
+            headers: {
+                Authorization: `Bearer ${process.env.GIVENGERGY_API_KEY}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        };
     }
 
     getEnergyFlows = async (): Promise<SolarData> => {
@@ -32,29 +40,36 @@ export class SolarService {
     async fillCache(): Promise<void> {
         console.log('filling solar cache');
         try {
-            const readInverterPromise1 = await axios.get(this.inverterAddress1);
-            const readInverterPromise2 = await axios.get(this.inverterAddress2);
+            const readInverterPromise1 = await axios.get(this.inverterAddress1, this.givenergyGetConfig);
+            const readInverterPromise2 = await axios.get(this.inverterAddress2, this.givenergyGetConfig);
 
             const response1 = readInverterPromise1;
             const response2 = readInverterPromise2;
 
-            // debug.log('inv12',response2.data);
-            const inverterFlows1 = response1.data.Power.Flows;
-            const inverterPower1 = response1.data.Power.Power;
-            const inverterFlows2 = response2.data.Power.Flows;
-            const inverterPower2 = response2.data.Power.Power;
-            const rawInverter2 = response2.data.raw.invertor;
+            debug.log('inv1',response1);
+            debug.log('inv2',response2);
+            let solar1 = response1.data.data.solar;
+            let solar2 = response2.data.data.solar;
+
+            let grid1 = response1.data.data.grid;
+            let grid2 = response2.data.data.grid;
+
+            let battery1 = response1.data.data.battery;
+            let battery2 = response2.data.data.battery;
+
+            let inverter1 = response1.data.data.inverter;
+            let inverter2 = response2.data.data.inverter;
+
             // debug.log('inverter 2', inverterPower2);
             // debug.log('inverter 2', inverterFlows2);
 
-            const rows = [];
-            const generatingWatts = inverterPower1.PV_Power + inverterPower2.PV_Power;
+            const generatingWatts = solar1.power + solar2.power;
             const pvgenerating = new SolarEnergyData('Panel', 'Generating from solar', generatingWatts, 'w');
 
-            const houseUsageWatts = inverterPower2.Load_Power + inverterPower1.Load_Power;
+            const houseUsageWatts = inverter1.power + inverter2.power;
             const houseUsage = new SolarEnergyData('Home', 'House Usage', houseUsageWatts, 'w');
 
-            const batteryPercentage = rawInverter2.battery_percent;
+            const batteryPercentage = battery1.percent + battery2.percent;
             const battery = new SolarEnergyData('Battery', 'Battery Charge', batteryPercentage, '%');
 
             const predicted = 0;

@@ -25,4 +25,6 @@ You will need to create an `.env` file with the following:
 OCTOPUS_API_KEY="sk_live_xxxxx"
 TFL_API_KEY="xxxx"
 OCTOPUS_ACCOUNT_NUMBER="xxx"
+GIVENGERGY_API_KEY="xxx"
+
 ```
